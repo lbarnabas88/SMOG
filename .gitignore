@@ -1,0 +1,22 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Point cloud data file
+*.pcd
+
+# Las format
+*.las
+
+# Mesh files
+*.vtk
