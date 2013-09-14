@@ -26,12 +26,10 @@ QMAKE_CXXFLAGS += -std=c++11
 
 SOURCES += main.cpp \
     SmogMainWindow.cpp \
-    SmogController.cpp \
     QPointCloudVisualizer.cpp
 
 HEADERS  += \
     SmogMainWindow.hpp \
-    SmogController.hpp \
     QPointCloudVisualizer.hpp
 
 FORMS    += SmogMainWindow.ui

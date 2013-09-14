@@ -5,8 +5,6 @@
 #include <memory>
 // QT
 #include <QMainWindow>
-// Smog
-#include "SmogController.hpp"
 
 /**
  * UI class of the main window.
@@ -34,7 +32,7 @@ public:
      * Destructor of the main window.
      */
     ~SmogMainWindow();
-    
+
 private slots:
 
     /**
