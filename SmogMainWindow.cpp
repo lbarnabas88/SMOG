@@ -3,6 +3,10 @@
 // QT
 #include <QFileDialog>
 #include <QTextStream>
+// PCL
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/io/pcd_io.h>
 
 /**
  * Constructor of the main window.
@@ -46,5 +50,22 @@ void SmogMainWindow::on_actionLoad_Cloud_triggered()
     QString filename = QFileDialog::getOpenFileName(this, "Load file");
     // If valid, log
     if(!filename.isNull())
-        QTextStream(stdout) << "[MainWindow] Load file: " << filename << '\n';
+    {
+        // Logger
+        QTextStream out(stdout);
+        // Log selected file
+        out << "[Main] Load file: " << filename << '\n';
+        // Cloud to load
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+        // Load
+        if(pcl::io::loadPCDFile(filename.toStdString(), *cloud) == 0)
+        {
+            // Log it's loaded
+            out << "[Main] PCD cloud loaded (" << cloud->width << 'x' << cloud->height << ")\n";
+            // Update to visualizer
+            ui->CloudVisualizer->visualizer().updatePointCloud(cloud);
+            // Reset camera
+            ui->CloudVisualizer->visualizer().resetCamera();
+        }
+    }
 }

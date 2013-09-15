@@ -1,6 +1,9 @@
 #include "QPointCloudVisualizer.hpp"
-
+// VTK
 #include <vtkRenderWindow.h>
+// PCL
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 /**
  * @brief Point cloud visualizer constructor
@@ -11,4 +14,8 @@ QPointCloudVisualizer::QPointCloudVisualizer(QWidget *parent) :
 {
     // Set render window
     SetRenderWindow(mVisualizer.getRenderWindow());
+    // Empty cloud
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr emptyCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    // Add empty cloud
+    mVisualizer.addPointCloud(emptyCloud);
 }

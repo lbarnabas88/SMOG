@@ -18,15 +18,12 @@
     <normaloff>:/icons/appicon</normaloff>:/icons/appicon</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <layout class="QVBoxLayout" name="LeftLayout"/>
+     <layout class="QVBoxLayout" name="LeftPanel"/>
     </item>
     <item>
-     <widget class="QPointCloudVisualizer" name="CloudVizualizer" native="true">
+     <widget class="QPointCloudVisualizer" name="CloudVisualizer" native="true">
       <property name="enabled">
        <bool>false</bool>
       </property>
@@ -39,7 +36,7 @@
      </widget>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="RightLayout"/>
+     <layout class="QVBoxLayout" name="RightPanel"/>
     </item>
    </layout>
   </widget>
@@ -79,7 +76,9 @@
   </widget>
   <action name="actionLoad_Cloud">
    <property name="icon">
-    <iconset theme="document-open"/>
+    <iconset theme="document-open">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>Load Cloud</string>
@@ -136,7 +135,7 @@
   <customwidget>
    <class>QPointCloudVisualizer</class>
    <extends>QWidget</extends>
-   <header>QPointCloudVisualizer.hpp</header>
+   <header location="global">QPointCloudVisualizer.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

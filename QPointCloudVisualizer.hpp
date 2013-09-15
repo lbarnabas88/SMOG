@@ -17,11 +17,20 @@ public:
      * @param parent the parent widget of this
      */
     explicit QPointCloudVisualizer(QWidget *parent = 0);
-    
+
+    /**
+     * @brief Get reference to the visualizer
+     * @return pcl visualizer reference
+     */
+    inline pcl::visualization::PCLVisualizer& visualizer()
+    {
+        return mVisualizer;
+    }
+
 signals:
-    
+
 public slots:
-    
+
 private:
     // PCL visualizer object
     pcl::visualization::PCLVisualizer mVisualizer;
