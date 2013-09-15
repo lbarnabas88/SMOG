@@ -48,7 +48,15 @@
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionIncrease_point_size"/>
+    <addaction name="actionDecrease_point_size"/>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menuView"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="mainToolBar">
@@ -58,9 +66,12 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionLoad_Cloud_2"/>
+   <addaction name="actionLoad_Cloud"/>
    <addaction name="separator"/>
-   <addaction name="actionQuit_2"/>
+   <addaction name="actionIncrease_point_size"/>
+   <addaction name="actionDecrease_point_size"/>
+   <addaction name="separator"/>
+   <addaction name="actionQuit"/>
   </widget>
   <action name="actionLoad_Cloud">
    <property name="icon">
@@ -94,27 +105,26 @@
     <enum>QAction::HighPriority</enum>
    </property>
   </action>
-  <action name="actionLoad_Cloud_2">
+  <action name="actionIncrease_point_size">
    <property name="icon">
-    <iconset theme="document-open">
-     <normaloff/>
-    </iconset>
+    <iconset theme="list-add"/>
    </property>
    <property name="text">
-    <string>Load Cloud</string>
+    <string>Increase point size</string>
    </property>
-   <property name="toolTip">
-    <string>Load Cloud</string>
+   <property name="shortcut">
+    <string>+</string>
    </property>
   </action>
-  <action name="actionQuit_2">
+  <action name="actionDecrease_point_size">
    <property name="icon">
-    <iconset theme="application-exit">
-     <normaloff/>
-    </iconset>
+    <iconset theme="list-remove"/>
    </property>
    <property name="text">
-    <string>Quit</string>
+    <string>Decrease point size</string>
+   </property>
+   <property name="shortcut">
+    <string>-</string>
    </property>
   </action>
  </widget>
@@ -130,38 +140,5 @@
  <resources>
   <include location="icons.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>actionQuit_2</sender>
-   <signal>triggered()</signal>
-   <receiver>actionQuit</receiver>
-   <slot>trigger()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionLoad_Cloud_2</sender>
-   <signal>triggered()</signal>
-   <receiver>actionLoad_Cloud</receiver>
-   <slot>trigger()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

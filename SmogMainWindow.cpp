@@ -96,3 +96,29 @@ void SmogMainWindow::on_actionLoad_Cloud_triggered()
         }
     }
 }
+
+void SmogMainWindow::on_actionIncrease_point_size_triggered()
+{
+    // Size
+    double pointSize = 1.0f;
+    // Get size
+    ui->CloudVisualizer->visualizer().getPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, pointSize);
+    // Increase and set
+    if(pointSize < 5.0)
+        ui->CloudVisualizer->visualizer().setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, pointSize + 1);
+    // Update
+    ui->CloudVisualizer->update();
+}
+
+void SmogMainWindow::on_actionDecrease_point_size_triggered()
+{
+    // Size
+    double pointSize = 1.0f;
+    // Get size
+    ui->CloudVisualizer->visualizer().getPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, pointSize);
+    // Increase and set
+    if(pointSize > 1.0)
+        ui->CloudVisualizer->visualizer().setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, pointSize - 1);
+    // Update
+    ui->CloudVisualizer->update();
+}
