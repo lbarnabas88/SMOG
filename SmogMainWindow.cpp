@@ -58,52 +58,32 @@ void SmogMainWindow::on_actionQuit_triggered()
  */
 void SmogMainWindow::on_actionLoad_Cloud_triggered()
 {
+    // Settings object
+    QSettings settings;
     // QString selected filter
     QString filetype;
     // Get file path to load
-    QString filename = QFileDialog::getOpenFileName(this, "Load file", "", "Point cloud(*.pcd *.las);;All files(*)", &filetype);
-    // If valid, log
+    QString filename = QFileDialog::getOpenFileName(this, "Load file", settings.value("main/lastdir", "").toString(), "Point cloud(*.pcd *.las);;All files(*)", &filetype);
+    // If valid
     if(!filename.isNull())
     {
         // Logger
         QTextStream out(stdout);
+        // Create file info object
+        QFileInfo fileinfo(filename);
         // Log selected file
-        out << "[Main] Load file: " << filename << " (type: " << filetype << ")\n";
-        // Cloud blob to load
-        pcl::PCLPointCloud2 cloudBlob;
-        // Load
-        if(pcl::io::loadPCDFile(filename.toStdString(), cloudBlob) == 0)
+        out << "[Main] Load file: dir: " << fileinfo.dir().absolutePath() << ", name: " << fileinfo.fileName() << ", extension: " << fileinfo.suffix() << '\n';
+        // Add cloud to the store
+        if (fileinfo.suffix() == "pcd")
         {
-            // Log it's loaded
-            out << "[Main] PCD cloud loaded (" << cloudBlob.width << 'x' << cloudBlob.height << ")\n";
-            // There is RGB
-            bool isRGB = false;
-            // Detect rgb component
-            for(auto& field : cloudBlob.fields)
-                if(field.name == "rgb")
-                    isRGB = true;
-            // If there is color
-            if(isRGB)
-            {
-                // Cloud
-                pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-                // Convert cloud
-                pcl::fromPCLPointCloud2(cloudBlob,*cloud);
-                // Update to visualizer
-                ui->CloudVisualizer->visualizer().updatePointCloud(cloud);
-            }
-            else
-            {
-                // Cloud
-                pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-                // Convert cloud
-                pcl::fromPCLPointCloud2(cloudBlob,*cloud);
-                // Update to visualizer
-                ui->CloudVisualizer->visualizer().updatePointCloud(cloud);
-            }
-            // Reset camera
-            ui->CloudVisualizer->visualizer().resetCamera();
+            // TODO call load pcd
         }
+        else if(fileinfo.suffix() == "las")
+        {
+            // TODO call load las
+        }
+        // Set last used directory
+        settings.setValue("main/lastdir", fileinfo.dir().absolutePath());
     }
 }
 
@@ -114,7 +94,7 @@ void SmogMainWindow::on_actionIncrease_point_size_triggered()
     // Get size
     ui->CloudVisualizer->visualizer().getPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, pointSize);
     // Increase and set
-    if(pointSize < 5.0)
+    if(pointSize < 9.0)
         ui->CloudVisualizer->visualizer().setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, pointSize + 1);
     // Update
     ui->CloudVisualizer->update();

@@ -28,12 +28,5 @@ QPointCloudVisualizer::QPointCloudVisualizer(QWidget *parent) :
     // Set background color
     QTextStream out(stdout);
     if(bgColor.isValid())
-    {
-        out << "asdf\n";
         mVisualizer.setBackgroundColor(bgColor.redF(), bgColor.greenF(), bgColor.blueF());
-    }
-    else
-    {
-        out << "qwer\n";
-    }
 }
