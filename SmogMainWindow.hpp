@@ -49,6 +49,8 @@ private slots:
 
     void on_actionDecrease_point_size_triggered();
 
+    void on_actionBackground_Color_triggered();
+
 private:
     /**
      * @brief User interface object.

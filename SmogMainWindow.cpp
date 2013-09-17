@@ -3,6 +3,8 @@
 // QT
 #include <QFileDialog>
 #include <QTextStream>
+#include <QColorDialog>
+#include <QSettings>
 // PCL
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -19,6 +21,14 @@ SmogMainWindow::SmogMainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::SmogMainWindow)
 {
+    // Set organization name
+    QCoreApplication::setOrganizationName("PPKE-ITK");
+    // Set organization domain
+    QCoreApplication::setOrganizationDomain("itk.ppke.hu");
+    // Set application name
+    QCoreApplication::setApplicationName("Smog");
+    // Set application version
+    QCoreApplication::setApplicationVersion("0.0.1");
     // Setup the ui
     ui->setupUi(this);
     // Start maximized
@@ -121,4 +131,21 @@ void SmogMainWindow::on_actionDecrease_point_size_triggered()
         ui->CloudVisualizer->visualizer().setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, pointSize - 1);
     // Update
     ui->CloudVisualizer->update();
+}
+
+void SmogMainWindow::on_actionBackground_Color_triggered()
+{
+    // Color picker
+    QColor newBackgroundColor = QColorDialog::getColor(Qt::black, this);
+    // If selected
+    if(newBackgroundColor.isValid())
+    {
+        // Set background color
+        ui->CloudVisualizer->visualizer().setBackgroundColor(newBackgroundColor.redF(), newBackgroundColor.greenF(), newBackgroundColor.blueF());
+        // Settings
+        QSettings settings;
+        // Set to settings
+        settings.setValue("visualizer/bgcolor", newBackgroundColor);
+
+    }
 }

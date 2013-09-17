@@ -27,15 +27,6 @@ LIBS += -lQVTK \
 
 QMAKE_CXXFLAGS += -std=c++11
 
-SOURCES += main.cpp
-
-FORMS    += SmogMainWindow.ui
-
-RESOURCES += icons.qrc
-
-OTHER_FILES += \
-    QtPcl.pri \
-    Smog.pri
-
-include(QtPcl.pri)
-include(Smog.pri)
+include(main.pri)
+include(qtpcl.pri)
+include(backend.pri)
