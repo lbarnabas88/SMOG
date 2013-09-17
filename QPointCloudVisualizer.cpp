@@ -18,6 +18,4 @@ QPointCloudVisualizer::QPointCloudVisualizer(QWidget *parent) :
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr emptyCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     // Add empty cloud
     mVisualizer.addPointCloud(emptyCloud);
-    // Set background color
-    mVisualizer.setBackgroundColor(0.0, 0.4, 0.6);
 }

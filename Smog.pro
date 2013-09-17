@@ -11,7 +11,10 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Smog
 TEMPLATE = app
 
-INCLUDEPATH += /usr/include/vtk-5.8
+INCLUDEPATH += /usr/include/vtk-5.8 \
+    /usr/include/qt4 \
+    /usr/include/pcl-1.7 \
+    /usr/include/eigen3
 
 LIBS += -lQVTK \
     -lboost_system \
@@ -24,14 +27,15 @@ LIBS += -lQVTK \
 
 QMAKE_CXXFLAGS += -std=c++11
 
-SOURCES += main.cpp \
-    SmogMainWindow.cpp \
-    QPointCloudVisualizer.cpp
-
-HEADERS  += \
-    SmogMainWindow.hpp \
-    QPointCloudVisualizer.hpp
+SOURCES += main.cpp
 
 FORMS    += SmogMainWindow.ui
 
 RESOURCES += icons.qrc
+
+OTHER_FILES += \
+    QtPcl.pri \
+    Smog.pri
+
+include(QtPcl.pri)
+include(Smog.pri)
