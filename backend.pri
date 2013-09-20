@@ -1,5 +1,11 @@
 HEADERS += \
-    CloudStore.hpp
+    CloudStore.hpp \
+    CloudEntry.hpp \
+    CloudData.hpp \
+    PcdCloudData.hpp
 
 SOURCES += \
-    CloudStore.cpp
+    CloudStore.cpp \
+    CloudEntry.cpp \
+    CloudData.cpp \
+    PcdCloudData.cpp

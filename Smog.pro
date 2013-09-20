@@ -30,3 +30,4 @@ QMAKE_CXXFLAGS += -std=c++11
 include(main.pri)
 include(qtpcl.pri)
 include(backend.pri)
+include(tools.pri)

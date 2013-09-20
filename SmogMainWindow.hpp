@@ -1,10 +1,12 @@
 #ifndef SMOGMAINWINDOW_HPP
 #define SMOGMAINWINDOW_HPP
 
-// STD
+// Std
 #include <memory>
-// QT
+// Qt
 #include <QMainWindow>
+// Backend
+#include "CloudEntry.hpp"
 
 /**
  * UI class of the main window.
@@ -35,14 +37,6 @@ public:
 
 private slots:
 
-    /**
-     * @brief Called when quit action's triggered
-     */
-    void on_actionQuit_triggered();
-
-    /**
-     * @brief Called when the load action's triggered
-     */
     void on_actionLoad_Cloud_triggered();
 
     void on_actionIncrease_point_size_triggered();
@@ -56,6 +50,9 @@ private:
      * @brief User interface object.
      */
     Ui::SmogMainWindow *ui;
+
+    void updateClouds();
+    void updateData(CloudEntry::Ptr cloudEntry);
 };
 
 #endif // SMOGMAINWINDOW_HPP

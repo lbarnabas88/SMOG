@@ -1,16 +1,19 @@
 #include "SmogMainWindow.hpp"
 #include "ui_SmogMainWindow.h"
-// QT
+// Qt
 #include <QFileDialog>
 #include <QTextStream>
 #include <QColorDialog>
 #include <QSettings>
-// PCL
+// Pcl
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
-// STD
+// Std
 #include <iostream>
+// Backend
+#include "CloudStore.hpp"
+#include "PcdCloudData.hpp"
 
 /**
  * Constructor of the main window.
@@ -31,6 +34,8 @@ SmogMainWindow::SmogMainWindow(QWidget *parent) :
     QCoreApplication::setApplicationVersion("0.0.1");
     // Setup the ui
     ui->setupUi(this);
+    // Set model
+    ui->CloudList->setModel(&CloudStore::getInstance());
     // Start maximized
     showMaximized();
 }
@@ -42,15 +47,6 @@ SmogMainWindow::~SmogMainWindow()
 {
     // Delete user interface.
     delete ui;
-}
-
-/**
- * @brief Called when quit action's triggered
- */
-void SmogMainWindow::on_actionQuit_triggered()
-{
-    // Quit app
-    qApp->quit();
 }
 
 /**
@@ -73,15 +69,12 @@ void SmogMainWindow::on_actionLoad_Cloud_triggered()
         QFileInfo fileinfo(filename);
         // Log selected file
         out << "[Main] Load file: dir: " << fileinfo.dir().absolutePath() << ", name: " << fileinfo.fileName() << ", extension: " << fileinfo.suffix() << '\n';
-        // Add cloud to the store
-        if (fileinfo.suffix() == "pcd")
-        {
-            // TODO call load pcd
-        }
-        else if(fileinfo.suffix() == "las")
-        {
-            // TODO call load las
-        }
+        // Cloud store
+        auto& cloudStore = CloudStore::getInstance();
+        // Add cloud
+        cloudStore.addCloud(fileinfo.baseName(), fileinfo.absoluteFilePath());
+        // Update viz
+        updateData(cloudStore.getCloud(cloudStore.getNumberOfClouds() - 1));
         // Set last used directory
         settings.setValue("main/lastdir", fileinfo.dir().absolutePath());
     }
@@ -128,4 +121,16 @@ void SmogMainWindow::on_actionBackground_Color_triggered()
         settings.setValue("visualizer/bgcolor", newBackgroundColor);
 
     }
+}
+
+void SmogMainWindow::updateData(CloudEntry::Ptr cloudEntry)
+{
+    auto raw_data = cloudEntry->getData();
+    // Try as pcd
+    auto pcd_data = dynamic_cast<PcdCloudData*>(raw_data.get());
+    if(pcd_data)
+    {
+        ui->CloudVisualizer->visualizer().addPointCloud(pcd_data->getCloud<pcl::PointXYZ>(), cloudEntry->getName().toStdString());
+    }
+    // Try as las
 }

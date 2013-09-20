@@ -20,13 +20,31 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QPointCloudVisualizer" name="CloudVisualizer" native="true">
-      <property name="mouseTracking">
-       <bool>true</bool>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
-      <property name="focusPolicy">
-       <enum>Qt::ClickFocus</enum>
-      </property>
+      <widget class="QWidget" name="verticalLayoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QTableView" name="CloudList"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QPointCloudVisualizer" name="CloudVisualizer" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="mouseTracking">
+        <bool>true</bool>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::ClickFocus</enum>
+       </property>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -75,10 +93,18 @@
    </attribute>
    <addaction name="actionLoad_Cloud"/>
    <addaction name="separator"/>
+   <addaction name="actionQuit"/>
+  </widget>
+  <widget class="QToolBar" name="settingToolBar">
+   <attribute name="toolBarArea">
+    <enum>RightToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
    <addaction name="actionIncrease_point_size"/>
    <addaction name="actionDecrease_point_size"/>
    <addaction name="separator"/>
-   <addaction name="actionQuit"/>
   </widget>
   <action name="actionLoad_Cloud">
    <property name="icon">
@@ -143,7 +169,7 @@
     <string>Background Color</string>
    </property>
    <property name="shortcut">
-    <string>B</string>
+    <string>Ctrl+B</string>
    </property>
   </action>
  </widget>
@@ -159,5 +185,22 @@
  <resources>
   <include location="icons.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>actionQuit</sender>
+   <signal>triggered()</signal>
+   <receiver>SmogMainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

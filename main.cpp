@@ -3,6 +3,8 @@
 // QT
 #include <QApplication>
 
+#include "CloudStore.hpp"
+
 int main(int argc, char *argv[])
 {
     // Create qt application
