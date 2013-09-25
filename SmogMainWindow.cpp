@@ -9,11 +9,14 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/impl/instantiate.hpp>
+#include <pcl/visualization/impl/pcl_visualizer.hpp>
 // Std
 #include <iostream>
 // Backend
 #include "CloudStore.hpp"
 #include "PcdCloudData.hpp"
+#include "LasCloudData.hpp"
 
 /**
  * Constructor of the main window.
@@ -34,8 +37,12 @@ SmogMainWindow::SmogMainWindow(QWidget *parent) :
     QCoreApplication::setApplicationVersion("0.0.1");
     // Setup the ui
     ui->setupUi(this);
+    // Create model
+    mCloudModel.reset(new CloudModel(&CloudStore::getInstance()));
     // Set model
-    ui->CloudList->setModel(&CloudStore::getInstance());
+    ui->CloudList->setModel(mCloudModel.get());
+    // Connent model to window
+    connect(mCloudModel.get(), SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)), this, SLOT(cloudModelChanged(const QModelIndex&, const QModelIndex&)));
     // Start maximized
     showMaximized();
 }
@@ -72,7 +79,7 @@ void SmogMainWindow::on_actionLoad_Cloud_triggered()
         // Cloud store
         auto& cloudStore = CloudStore::getInstance();
         // Add cloud
-        cloudStore.addCloud(fileinfo.baseName(), fileinfo.absoluteFilePath());
+        mCloudModel->addCloud(fileinfo.baseName(), fileinfo.absoluteFilePath());
         // Update viz
         updateData(cloudStore.getCloud(cloudStore.getNumberOfClouds() - 1));
         // Set last used directory
@@ -119,18 +126,46 @@ void SmogMainWindow::on_actionBackground_Color_triggered()
         QSettings settings;
         // Set to settings
         settings.setValue("visualizer/bgcolor", newBackgroundColor);
-
     }
 }
 
+void SmogMainWindow::cloudModelChanged(const QModelIndex &from, const QModelIndex &to)
+{
+    Q_UNUSED(to);
+    // Get corresponding cloud
+    auto& cloud = CloudStore::getInstance().getCloud(from.row());
+    // Log name
+    QTextStream out(stdout);
+    out << "Cloud name: " << cloud->getName() << " Set to " << (cloud->isVisible()) << '\n';
+    // Update cloud on visualizer
+    updateData(cloud);
+}
+
+
+
 void SmogMainWindow::updateData(CloudEntry::Ptr cloudEntry)
 {
-    auto raw_data = cloudEntry->getData();
-    // Try as pcd
-    auto pcd_data = dynamic_cast<PcdCloudData*>(raw_data.get());
-    if(pcd_data)
+    if(cloudEntry->isVisible())
     {
-        ui->CloudVisualizer->visualizer().addPointCloud(pcd_data->getCloud<pcl::PointXYZ>(), cloudEntry->getName().toStdString());
+        auto raw_data = cloudEntry->getData();
+        // Try to convert
+        auto pcd_data = dynamic_cast<PcdCloudData*>(raw_data.get());
+        auto las_data = dynamic_cast<LasCloudData*>(raw_data.get());
+        // As pcd
+        if(pcd_data)
+        {
+            ui->CloudVisualizer->visualizer().addPointCloud(pcd_data->getCloud<pcl::PointXYZ>(), cloudEntry->getName().toStdString());
+        }
+        // As las
+        else if(las_data)
+        {
+            ui->CloudVisualizer->visualizer().addPointCloud(las_data->getCloud(), cloudEntry->getName().toStdString());
+        }
     }
-    // Try as las
+    else
+    {
+        ui->CloudVisualizer->visualizer().removePointCloud(cloudEntry->getName().toStdString());
+    }
+    // Update visualizer
+    ui->CloudVisualizer->update();
 }

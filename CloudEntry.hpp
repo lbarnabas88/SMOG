@@ -4,7 +4,7 @@
 // Std
 #include <memory>
 // Qt
-#include <QString>
+#include <QtCore>
 // Backend
 #include "CloudData.hpp"
 
@@ -17,7 +17,7 @@ public:
     // Pointer
     typedef std::shared_ptr<CloudEntry> Ptr;
     // Contructor/Destructor
-    CloudEntry() {}
+    CloudEntry() : mVisible(false) {}
     virtual ~CloudEntry() {}
     // Getters/Setters
     inline const QString& getName() const { return mName; }
@@ -25,11 +25,14 @@ public:
     inline const QString& getFilePath() const { return mFilePath; }
     inline void setFilePath(const QString& filepath) { mFilePath = filepath; }
     inline const std::shared_ptr<CloudData>& getData() { return mData; }
+    inline const bool& isVisible() const { return mVisible; }
+    inline void setVisible(const bool& visible) { mVisible = visible; }
 private:
     // Fields
     QString mName;
     QString mFilePath;
     CloudData::Ptr mData;
+    bool mVisible;
     // Friend connect
     friend class CloudStore;
 };

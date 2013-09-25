@@ -7,13 +7,11 @@
 // Qt
 #include <QtCore>
 #include <QString>
-#include <QAbstractTableModel>
 // Backend
 #include <CloudEntry.hpp>
 
-class CloudStore : public QAbstractTableModel
+class CloudStore
 {
-    Q_OBJECT
 public:
     // Singleton
     static CloudStore& getInstance();
@@ -24,13 +22,6 @@ public:
     // Get a cloud
     CloudEntry::Ptr& getCloud(const size_t& index);
     const CloudEntry::Ptr& getCloud(const size_t& index) const;
-    CloudEntry::Ptr& operator[](const size_t& index) { return getCloud(index); }
-    const CloudEntry::Ptr& operator[](const size_t& index) const { return getCloud(index); }
-    // Qt model
-    int rowCount(const QModelIndex &parent) const;
-    int columnCount(const QModelIndex &parent) const;
-    QVariant data(const QModelIndex &index, int role) const;
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 private:
     // Singleton
     CloudStore() {}

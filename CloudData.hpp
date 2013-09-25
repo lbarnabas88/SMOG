@@ -5,8 +5,6 @@
 #include <memory>
 // Qt
 #include <QString>
-// Pcl
-#include <pcl/point_cloud.h>
 
 class CloudData
 {

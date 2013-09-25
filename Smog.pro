@@ -23,7 +23,9 @@ LIBS += -lQVTK \
     -lvtkRendering \
     -lvtkFiltering \
     -lpcl_common \
-    -lpcl_io
+    -lpcl_io \
+    -lpcl_features \
+    -llas
 
 QMAKE_CXXFLAGS += -std=c++11
 

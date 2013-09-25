@@ -6,6 +6,7 @@
 // Qt
 #include <QMainWindow>
 // Backend
+#include "CloudModel.hpp"
 #include "CloudEntry.hpp"
 
 /**
@@ -45,14 +46,20 @@ private slots:
 
     void on_actionBackground_Color_triggered();
 
+    void cloudModelChanged(const QModelIndex& from, const QModelIndex& to);
+
 private:
-    /**
-     * @brief User interface object.
-     */
+    // User interface object
     Ui::SmogMainWindow *ui;
 
+    // Update all cloud on visualizer
     void updateClouds();
+
+    // Update cloud on visualizer
     void updateData(CloudEntry::Ptr cloudEntry);
+
+    // Qt model for cloud list
+    std::shared_ptr<CloudModel> mCloudModel;
 };
 
 #endif // SMOGMAINWINDOW_HPP
