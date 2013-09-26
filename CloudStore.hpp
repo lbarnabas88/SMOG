@@ -22,6 +22,11 @@ public:
     // Get a cloud
     CloudEntry::Ptr& getCloud(const size_t& index);
     const CloudEntry::Ptr& getCloud(const size_t& index) const;
+    // Get cloud index
+    size_t getCloudIndex(const QString& name);
+    // Remove cloud
+    void removeCloud(const QString& name);
+    void removeCloud(const size_t& index);
 private:
     // Singleton
     CloudStore() {}

@@ -13,6 +13,10 @@ class CloudModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
+    // Public static consts for column indices
+    static const int COLUMN_NAME = 0;
+    static const int COLUMN_VISIBILITY = 1;
+    static const int COLUMN_FILEPATH = 2;
     // Constructor
     CloudModel(CloudStore* cloudStore);
     // Get number of cloumns
@@ -29,6 +33,8 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role);
     // Add cloud to the model
     void addCloud(const QString& name, const QString& path);
+    // Remove cloud
+    void removeCloud(const int& index);
 private:
     // Cloud store
     CloudStore* mCloudStoreRef;

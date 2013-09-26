@@ -29,15 +29,15 @@ QVariant CloudModel::data(const QModelIndex &index, int role) const
     case Qt::DisplayRole:
         // Switch column
         switch (index.column()) {
-        case 0:
-            return cloud->getName();
+        case COLUMN_NAME:
+            return cloud->getName() + (cloud->isDirty()?"*":"");
         }
         break;
     // Set decoration
     case Qt::DecorationRole:
         // Switch column
         switch (index.column()) {
-        case 0:
+        case COLUMN_NAME:
             return Qt::black;
         }
         break;
@@ -45,7 +45,7 @@ QVariant CloudModel::data(const QModelIndex &index, int role) const
     case Qt::CheckStateRole:
         // Switch column
         switch (index.column()) {
-        case 1:
+        case COLUMN_VISIBILITY:
             return (cloud->isVisible() ? Qt::Checked : Qt::Unchecked);
         }
         break;
@@ -65,9 +65,9 @@ QVariant CloudModel::headerData(int section, Qt::Orientation orientation, int ro
         {
             // Switch section
             switch (section) {
-            case 0:
+            case COLUMN_NAME:
                 return "Color/Name";
-            case 1:
+            case COLUMN_VISIBILITY:
                 return "Shown";
             }
         }
@@ -90,7 +90,6 @@ Qt::ItemFlags CloudModel::flags(const QModelIndex &index) const
 
 bool CloudModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    QTextStream out(stdout);
     // Cloud to modify
     auto& cloud = mCloudStoreRef->getCloud(index.row());
     // Switch role
@@ -98,7 +97,7 @@ bool CloudModel::setData(const QModelIndex &index, const QVariant &value, int ro
     case Qt::CheckStateRole:
         // Switch column
         switch (index.column()) {
-        case 1:
+        case COLUMN_VISIBILITY:
             cloud->setVisible(value.toBool());
             emit dataChanged(index,index);
             break;
@@ -119,4 +118,14 @@ void CloudModel::addCloud(const QString &name, const QString &path)
     // End insetrion
     endInsertRows();
 
+}
+
+void CloudModel::removeCloud(const int &index)
+{
+    // Begin remove
+    beginRemoveRows(QModelIndex(), index, index);
+    // Remove cloud by index
+    mCloudStoreRef->removeCloud(index);
+    // End remove
+    endRemoveRows();
 }

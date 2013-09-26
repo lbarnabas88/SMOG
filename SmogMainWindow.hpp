@@ -48,15 +48,14 @@ private slots:
 
     void cloudModelChanged(const QModelIndex& from, const QModelIndex& to);
 
+    void on_actionClose_Cloud_triggered();
+
 private:
     // User interface object
     Ui::SmogMainWindow *ui;
 
-    // Update all cloud on visualizer
-    void updateClouds();
-
     // Update cloud on visualizer
-    void updateData(CloudEntry::Ptr cloudEntry);
+    void updateOnVisibility(CloudEntry::Ptr cloudEntry);
 
     // Qt model for cloud list
     std::shared_ptr<CloudModel> mCloudModel;

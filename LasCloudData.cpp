@@ -33,7 +33,9 @@ bool LasCloudData::load(const QString &filepath)
         q.y = p.GetRawY();
         q.z = p.GetRawZ();
         // Copy returns
-        // TODO
+        q.label = p.GetNumberOfReturns();
+        q.label <<= 16;
+        q.label |= p.GetReturnNumber();
     }
     // Success
     return true;

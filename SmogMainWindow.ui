@@ -27,7 +27,11 @@
       <widget class="QWidget" name="verticalLayoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QTableView" name="CloudList"/>
+         <widget class="QTableView" name="CloudList">
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -63,6 +67,7 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionLoad_Cloud"/>
+    <addaction name="actionClose_Cloud"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -92,6 +97,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionLoad_Cloud"/>
+   <addaction name="actionClose_Cloud"/>
    <addaction name="separator"/>
    <addaction name="actionQuit"/>
   </widget>
@@ -170,6 +176,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+B</string>
+   </property>
+  </action>
+  <action name="actionClose_Cloud">
+   <property name="icon">
+    <iconset theme="window-close"/>
+   </property>
+   <property name="text">
+    <string>Close Cloud</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
    </property>
   </action>
  </widget>

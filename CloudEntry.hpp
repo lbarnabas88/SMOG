@@ -17,7 +17,7 @@ public:
     // Pointer
     typedef std::shared_ptr<CloudEntry> Ptr;
     // Contructor/Destructor
-    CloudEntry() : mVisible(false) {}
+    CloudEntry() : mVisible(true), mDirty(true) {}
     virtual ~CloudEntry() {}
     // Getters/Setters
     inline const QString& getName() const { return mName; }
@@ -27,12 +27,15 @@ public:
     inline const std::shared_ptr<CloudData>& getData() { return mData; }
     inline const bool& isVisible() const { return mVisible; }
     inline void setVisible(const bool& visible) { mVisible = visible; }
+    inline const bool& isDirty() const { return mDirty; }
+    inline void setDirty(const bool& dirty) { mDirty = dirty; }
 private:
     // Fields
     QString mName;
     QString mFilePath;
     CloudData::Ptr mData;
     bool mVisible;
+    bool mDirty;
     // Friend connect
     friend class CloudStore;
 };

@@ -81,7 +81,7 @@ void SmogMainWindow::on_actionLoad_Cloud_triggered()
         // Add cloud
         mCloudModel->addCloud(fileinfo.baseName(), fileinfo.absoluteFilePath());
         // Update viz
-        updateData(cloudStore.getCloud(cloudStore.getNumberOfClouds() - 1));
+        updateOnVisibility(cloudStore.getCloud(cloudStore.getNumberOfClouds() - 1));
         // Set last used directory
         settings.setValue("main/lastdir", fileinfo.dir().absolutePath());
     }
@@ -138,12 +138,13 @@ void SmogMainWindow::cloudModelChanged(const QModelIndex &from, const QModelInde
     QTextStream out(stdout);
     out << "Cloud name: " << cloud->getName() << " Set to " << (cloud->isVisible()) << '\n';
     // Update cloud on visualizer
-    updateData(cloud);
+    if(from.column() == CloudModel::COLUMN_VISIBILITY)
+        updateOnVisibility(cloud);
 }
 
 
 
-void SmogMainWindow::updateData(CloudEntry::Ptr cloudEntry)
+void SmogMainWindow::updateOnVisibility(CloudEntry::Ptr cloudEntry)
 {
     if(cloudEntry->isVisible())
     {
@@ -159,7 +160,7 @@ void SmogMainWindow::updateData(CloudEntry::Ptr cloudEntry)
         // As las
         else if(las_data)
         {
-            ui->CloudVisualizer->visualizer().addPointCloud(las_data->getCloud(), cloudEntry->getName().toStdString());
+            ui->CloudVisualizer->visualizer().addPointCloud<pcl::PointXYZL>(las_data->getCloud(), cloudEntry->getName().toStdString());
         }
     }
     else
@@ -168,4 +169,23 @@ void SmogMainWindow::updateData(CloudEntry::Ptr cloudEntry)
     }
     // Update visualizer
     ui->CloudVisualizer->update();
+}
+
+void SmogMainWindow::on_actionClose_Cloud_triggered()
+{
+    // Deleted items
+    int deleted = 0;
+    // Get selected clouds
+    foreach (QModelIndex index, ui->CloudList->selectionModel()->selectedRows())
+    {
+        // Get cloud
+        auto& cloud = CloudStore::getInstance().getCloud(index.row() - deleted);
+        // Remove cloud from visualizer
+        cloud->setVisible(false);
+        updateOnVisibility(cloud);
+        // Remove the cloud
+        mCloudModel->removeCloud(index.row() - deleted);
+        // Inc deleted
+        ++deleted;
+    }
 }

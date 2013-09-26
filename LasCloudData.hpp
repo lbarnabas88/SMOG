@@ -11,7 +11,7 @@ class LasCloudData : public CloudData
 {
 public:
     // Typedef for used point type
-    typedef pcl::PointXYZ PointT;
+    typedef pcl::PointXYZL PointT;
     // Constructor
     LasCloudData();
     // Load data
@@ -24,7 +24,6 @@ public:
 private:
     // Data
     pcl::PointCloud<PointT>::Ptr mData;
-
 };
 
 #endif // LASCLOUDDATA_HPP

@@ -59,3 +59,25 @@ const CloudEntry::Ptr &CloudStore::getCloud(const size_t &index) const
         throw std::overflow_error("[CloudStore] Get cloud overflow!");
     return mClouds[index];
 }
+
+size_t CloudStore::getCloudIndex(const QString &name)
+{
+    for(size_t i = 0; i < mClouds.size(); ++i)
+        if(mClouds[i]->getName() == name)
+            return i;
+    return mClouds.size();
+}
+
+void CloudStore::removeCloud(const QString &name)
+{
+    removeCloud(getCloudIndex(name));
+}
+
+void CloudStore::removeCloud(const size_t &index)
+{
+    // If out of range
+    if(index >= mClouds.size())
+        return;
+    // Remove from clouds
+    mClouds.erase(mClouds.begin() + index);
+}
