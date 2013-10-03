@@ -16,7 +16,7 @@ public:
     // Singleton
     static CloudStore& getInstance();
     // Add cloud
-    void addCloud(const QString& name, const QString& filepath);
+    void addCloud(const QString& name, const QString& filepath, bool isAdaptive = false);
     // Get number of cloud entries
     inline size_t getNumberOfClouds() const { return mClouds.size(); }
     // Get a cloud

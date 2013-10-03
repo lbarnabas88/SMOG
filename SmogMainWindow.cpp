@@ -41,6 +41,8 @@ SmogMainWindow::SmogMainWindow(QWidget *parent) :
     mCloudModel.reset(new CloudModel(&CloudStore::getInstance()));
     // Set model
     ui->CloudList->setModel(mCloudModel.get());
+    // Register visualizer events
+    ui->CloudVisualizer->visualizer().registerMouseCallback(&SmogMainWindow::onVisualizerMouse, *this, this);
     // Connent model to window
     connect(mCloudModel.get(), SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)), this, SLOT(cloudModelChanged(const QModelIndex&, const QModelIndex&)));
     // Start maximized
@@ -79,7 +81,7 @@ void SmogMainWindow::on_actionLoad_Cloud_triggered()
         // Cloud store
         auto& cloudStore = CloudStore::getInstance();
         // Add cloud
-        mCloudModel->addCloud(fileinfo.baseName(), fileinfo.absoluteFilePath());
+        mCloudModel->addCloud(fileinfo.baseName(), fileinfo.absoluteFilePath(), ui->actionUse_adaptive_clouds->isChecked());
         // Update viz
         updateOnVisibility(cloudStore.getCloud(cloudStore.getNumberOfClouds() - 1));
         // Set last used directory
@@ -89,28 +91,14 @@ void SmogMainWindow::on_actionLoad_Cloud_triggered()
 
 void SmogMainWindow::on_actionIncrease_point_size_triggered()
 {
-    // Size
-    double pointSize = 1.0f;
-    // Get size
-    ui->CloudVisualizer->visualizer().getPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, pointSize);
-    // Increase and set
-    if(pointSize < 9.0)
-        ui->CloudVisualizer->visualizer().setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, pointSize + 1);
-    // Update
-    ui->CloudVisualizer->update();
+    // Increase with 1
+    changeSelectedCloudsPointSize(1);
 }
 
 void SmogMainWindow::on_actionDecrease_point_size_triggered()
 {
-    // Size
-    double pointSize = 1.0f;
-    // Get size
-    ui->CloudVisualizer->visualizer().getPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, pointSize);
-    // Increase and set
-    if(pointSize > 1.0)
-        ui->CloudVisualizer->visualizer().setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, pointSize - 1);
-    // Update
-    ui->CloudVisualizer->update();
+    // Decrease with 1
+    changeSelectedCloudsPointSize(-1);
 }
 
 void SmogMainWindow::on_actionBackground_Color_triggered()
@@ -146,29 +134,46 @@ void SmogMainWindow::cloudModelChanged(const QModelIndex &from, const QModelInde
 
 void SmogMainWindow::updateOnVisibility(CloudEntry::Ptr cloudEntry)
 {
-    if(cloudEntry->isVisible())
-    {
-        auto raw_data = cloudEntry->getData();
-        // Try to convert
-        auto pcd_data = dynamic_cast<PcdCloudData*>(raw_data.get());
-        auto las_data = dynamic_cast<LasCloudData*>(raw_data.get());
-        // As pcd
-        if(pcd_data)
-        {
-            ui->CloudVisualizer->visualizer().addPointCloud(pcd_data->getCloud<pcl::PointXYZ>(), cloudEntry->getName().toStdString());
-        }
-        // As las
-        else if(las_data)
-        {
-            ui->CloudVisualizer->visualizer().addPointCloud<pcl::PointXYZL>(las_data->getCloud(), cloudEntry->getName().toStdString());
-        }
-    }
-    else
-    {
-        ui->CloudVisualizer->visualizer().removePointCloud(cloudEntry->getName().toStdString());
-    }
+    // Call visualize
+    cloudEntry->visualize(&ui->CloudVisualizer->visualizer());
     // Update visualizer
     ui->CloudVisualizer->update();
+}
+
+void SmogMainWindow::changeCloudPointSize(CloudEntry::Ptr cloud, int pointSizeDiff)
+{
+    // Size
+    double pointSize = 1.0f;
+    // Get size
+    ui->CloudVisualizer->visualizer().getPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, pointSize, cloud->getName().toStdString());
+    // Change
+    pointSize += pointSizeDiff;
+    // Increase and set
+    ui->CloudVisualizer->visualizer().setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, pointSize, cloud->getName().toStdString());
+    // Update
+    ui->CloudVisualizer->update();
+}
+
+void SmogMainWindow::changeSelectedCloudsPointSize(int pointSizeDiff)
+{
+    // For all selected row
+    foreach (QModelIndex index, ui->CloudList->selectionModel()->selectedRows())
+    {
+        // Change cloud point size
+        changeCloudPointSize(CloudStore::getInstance().getCloud(index.row()), pointSizeDiff);
+    }
+}
+
+void SmogMainWindow::onVisualizerMouse(const pcl::visualization::MouseEvent &me, void *userData)
+{
+    QTextStream out(stdout);
+    out << "[Main] Viz Mouse\n";
+}
+
+void SmogMainWindow::onVisualizerKeyboard(const pcl::visualization::KeyboardEvent &ke, void *userData)
+{
+    QTextStream out(stdout);
+    out << "[Main] Viz Keyboard\n";
 }
 
 void SmogMainWindow::on_actionClose_Cloud_triggered()

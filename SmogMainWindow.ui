@@ -83,6 +83,7 @@
      <string>Settings</string>
     </property>
     <addaction name="actionBackground_Color"/>
+    <addaction name="actionUse_adaptive_clouds"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuView"/>
@@ -180,13 +181,26 @@
   </action>
   <action name="actionClose_Cloud">
    <property name="icon">
-    <iconset theme="window-close"/>
+    <iconset theme="window-close">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>Close Cloud</string>
    </property>
    <property name="shortcut">
     <string>Del</string>
+   </property>
+  </action>
+  <action name="actionUse_adaptive_clouds">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use adaptive clouds</string>
    </property>
   </action>
  </widget>

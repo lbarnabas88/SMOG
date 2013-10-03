@@ -11,8 +11,7 @@
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/io/pcd_io.h>
 // Backend
-#include "PcdCloudData.hpp"
-#include "LasCloudData.hpp"
+#include <AdaptiveCloudEntry.hpp>
 
 CloudStore &CloudStore::getInstance()
 {
@@ -20,28 +19,18 @@ CloudStore &CloudStore::getInstance()
     return instance;
 }
 
-void CloudStore::addCloud(const QString &name, const QString &filepath)
+void CloudStore::addCloud(const QString &name, const QString &filepath, bool isAdaptive)
 {
-    // Determine the file type
-    QFileInfo fileinfo(filepath);
     // New cloud
-    std::shared_ptr<CloudEntry> newCloud(new CloudEntry());
+    std::shared_ptr<CloudEntry> newCloud;
+    // Create new cloud
+    if(isAdaptive)
+        newCloud.reset(new AdaptiveCloudEntry());
+    else
+        newCloud.reset(new CloudEntry());
     // Set fields
     newCloud->setName(name);
-    newCloud->setFilePath(filepath);
-    // Create cloud
-    if(fileinfo.suffix() == "las")
-    {
-        // Create las cloud
-        newCloud->mData.reset(new LasCloudData());
-        newCloud->mData->load(newCloud->getFilePath());
-    }
-    else if(fileinfo.suffix() == "pcd")
-    {
-        // Create pcd cloud
-        newCloud->mData.reset(new PcdCloudData());
-        newCloud->mData->load(newCloud->getFilePath());
-    }
+    newCloud->load(filepath);
     // Add new cloud to the list
     mClouds.push_back(newCloud);
 }

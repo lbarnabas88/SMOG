@@ -3,6 +3,8 @@
 #include <fstream>
 // Liblas
 #include <liblas/liblas.hpp>
+// Pcl
+#include <pcl/octree/octree.h>
 
 LasCloudData::LasCloudData()
 {
@@ -29,9 +31,9 @@ bool LasCloudData::load(const QString &filepath)
         liblas::Point const& p = reader.GetPoint();
         PointT& q = (*mData)[i];
         // Copy xyz
-        q.x = p.GetRawX();
-        q.y = p.GetRawY();
-        q.z = p.GetRawZ();
+        q.x = p.GetX();
+        q.y = p.GetY();
+        q.z = p.GetZ();
         // Copy returns
         q.label = p.GetNumberOfReturns();
         q.label <<= 16;
@@ -46,4 +48,12 @@ bool LasCloudData::save(const QString &filepath)
     Q_UNUSED(filepath);
     // Isn't implemented yet
     return false;
+}
+
+pcl::PointCloud<LasCloudData::PointT>::Ptr LasCloudData::createCloud()
+{
+    // Resem mdata
+    mData.reset(new pcl::PointCloud<PointT>());
+    // Return the new data
+    return mData;
 }

@@ -57,8 +57,20 @@ private:
     // Update cloud on visualizer
     void updateOnVisibility(CloudEntry::Ptr cloudEntry);
 
+    // Change cloud point size
+    void changeCloudPointSize(CloudEntry::Ptr cloud, int pointSizeDiff);
+
+    // Change selected clouds point size
+    void changeSelectedCloudsPointSize(int pointSizeDiff);
+
     // Qt model for cloud list
     std::shared_ptr<CloudModel> mCloudModel;
+
+    // Visualizer mouse callback
+    void onVisualizerMouse(const pcl::visualization::MouseEvent& me, void* userData);
+
+    // Visualizer keyboard callback
+    void onVisualizerKeyboard(const pcl::visualization::KeyboardEvent& ke, void* userData);
 };
 
 #endif // SMOGMAINWINDOW_HPP

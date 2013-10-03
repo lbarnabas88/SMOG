@@ -32,7 +32,7 @@ public:
     // Set data
     bool setData(const QModelIndex &index, const QVariant &value, int role);
     // Add cloud to the model
-    void addCloud(const QString& name, const QString& path);
+    void addCloud(const QString& name, const QString& path, bool isAdaptive = false);
     // Remove cloud
     void removeCloud(const int& index);
 private:

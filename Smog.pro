@@ -25,6 +25,7 @@ LIBS += -lQVTK \
     -lpcl_common \
     -lpcl_io \
     -lpcl_features \
+    -lpcl_octree \
     -llas
 
 QMAKE_CXXFLAGS += -std=c++11

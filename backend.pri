@@ -4,7 +4,9 @@ HEADERS += \
     CloudData.hpp \
     PcdCloudData.hpp \
     CloudModel.hpp \
-    LasCloudData.hpp
+    LasCloudData.hpp \
+    AdaptiveCloudEntry.hpp \
+    LasPoint.hpp
 
 SOURCES += \
     CloudStore.cpp \
@@ -12,4 +14,6 @@ SOURCES += \
     CloudData.cpp \
     PcdCloudData.cpp \
     CloudModel.cpp \
-    LasCloudData.cpp
+    LasCloudData.cpp \
+    AdaptiveCloudEntry.cpp \
+    LasPoint.cpp

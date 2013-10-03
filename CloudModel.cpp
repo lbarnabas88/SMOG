@@ -16,7 +16,7 @@ int CloudModel::rowCount(const QModelIndex &parent) const
 int CloudModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return 2;
+    return 3;
 }
 
 QVariant CloudModel::data(const QModelIndex &index, int role) const
@@ -31,6 +31,8 @@ QVariant CloudModel::data(const QModelIndex &index, int role) const
         switch (index.column()) {
         case COLUMN_NAME:
             return cloud->getName() + (cloud->isDirty()?"*":"");
+        case COLUMN_FILEPATH:
+            return cloud->getFilePath();
         }
         break;
     // Set decoration
@@ -69,6 +71,8 @@ QVariant CloudModel::headerData(int section, Qt::Orientation orientation, int ro
                 return "Color/Name";
             case COLUMN_VISIBILITY:
                 return "Shown";
+            case COLUMN_FILEPATH:
+                return "Filepath";
             }
         }
         break;
@@ -80,9 +84,11 @@ Qt::ItemFlags CloudModel::flags(const QModelIndex &index) const
 {
     // Switch column
     switch (index.column()) {
-    case 1:
+    case COLUMN_VISIBILITY:
         // Return base + editable
         return QAbstractTableModel::flags(index) | Qt::ItemIsUserCheckable;
+    case COLUMN_FILEPATH:
+        return QAbstractTableModel::flags(index);
     }
     // Return base
     return QAbstractTableModel::flags(index);
@@ -101,20 +107,24 @@ bool CloudModel::setData(const QModelIndex &index, const QVariant &value, int ro
             cloud->setVisible(value.toBool());
             emit dataChanged(index,index);
             break;
+        case COLUMN_FILEPATH:
+            cloud->setFilePath(value.toString());
+            emit dataChanged(index,index);
+            break;
         }
     }
     // Return
     return true;
 }
 
-void CloudModel::addCloud(const QString &name, const QString &path)
+void CloudModel::addCloud(const QString &name, const QString &path, bool isAdaptive)
 {
     // Row to insert
     int row = mCloudStoreRef->getNumberOfClouds();
     // Begin insertion
     beginInsertRows(QModelIndex(), row, row);
     // Add cloud to the store
-    mCloudStoreRef->addCloud(name, path);
+    mCloudStoreRef->addCloud(name, path, isAdaptive);
     // End insetrion
     endInsertRows();
 

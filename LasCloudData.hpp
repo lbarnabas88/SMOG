@@ -10,6 +10,8 @@
 class LasCloudData : public CloudData
 {
 public:
+    // Smart pointer
+    typedef std::shared_ptr<LasCloudData> Ptr;
     // Typedef for used point type
     typedef pcl::PointXYZL PointT;
     // Constructor
@@ -21,6 +23,8 @@ public:
     // Get data
     inline pcl::PointCloud<PointT>::Ptr getCloud() { return mData; }
     const pcl::PointCloud<PointT>::Ptr getCloud() const { return mData; }
+    // Create empty cloud
+    pcl::PointCloud<PointT>::Ptr createCloud();
 private:
     // Data
     pcl::PointCloud<PointT>::Ptr mData;
