@@ -8,7 +8,7 @@
 // Qt
 #include <QTextStream>
 
-size_t AdaptiveCloudEntry::SegmentSize = 250000;
+size_t AdaptiveCloudEntry::SegmentSize = 65536;
 
 AdaptiveCloudEntry::AdaptiveCloudEntry() : mNeedToUpdate(false)
 {
@@ -154,6 +154,9 @@ void AdaptiveCloudEntry::build(CloudData::Ptr cloudData)
     n = 0;
     mSubclouds.clear();
     auto end_depth_it = divider.depth_end();
+
+    size_t sumsize = 0;
+
     for(auto it = divider.depth_begin();it != end_depth_it; ++it)
     {
         // Indices of this sub cloud
@@ -172,6 +175,7 @@ void AdaptiveCloudEntry::build(CloudData::Ptr cloudData)
         // Thin cloud if branch node
         if(it.isBranchNode())
             thinCloudTo(newSubCloud, SegmentSize);
+        sumsize += newSubCloud->getCloud()->size();
         // Get level vector
         auto& level = mSubclouds[it.getCurrentOctreeDepth()];
         // Add the new cloud
@@ -180,6 +184,7 @@ void AdaptiveCloudEntry::build(CloudData::Ptr cloudData)
         ++n;
     }
     // Log result
+    out << "[AdaptiveCloudEntry] Original point number: " << cloud->size() << ", Segmented and thinned points: " << sumsize << '\n';
     n = 0;
     out << "[AdaptiveCloudEntry] Generated levels: " << mSubclouds.size() << '\n';
     for(auto& level : mSubclouds)
@@ -187,5 +192,4 @@ void AdaptiveCloudEntry::build(CloudData::Ptr cloudData)
         out << "[AdaptiveCloudEntry] Segment on level" << n++ << ": " << level.size() << '\n';
     }
     out.flush();
-
 }
