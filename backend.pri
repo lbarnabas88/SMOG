@@ -6,8 +6,7 @@ HEADERS += \
     CloudModel.hpp \
     LasCloudData.hpp \
     AdaptiveCloudEntry.hpp \
-    LasPoint.hpp \
-    AdapTree.hpp
+    LasPoint.hpp
 
 SOURCES += \
     CloudStore.cpp \
@@ -17,5 +16,4 @@ SOURCES += \
     CloudModel.cpp \
     LasCloudData.cpp \
     AdaptiveCloudEntry.cpp \
-    LasPoint.cpp \
-    AdapTree.cpp
+    LasPoint.cpp

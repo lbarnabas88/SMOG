@@ -14,6 +14,8 @@ public:
     typedef std::shared_ptr<LasCloudData> Ptr;
     // Typedef for used point type
     typedef pcl::PointXYZL PointT;
+    // Cloud type
+    typedef pcl::PointCloud<PointT> CloudT;
     // Constructor
     LasCloudData();
     // Load data
