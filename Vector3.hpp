@@ -1,6 +1,8 @@
 #ifndef VECTOR3_HPP
 #define VECTOR3_HPP
 
+#include "Vector2.hpp"
+
 namespace math
 {
 
@@ -36,6 +38,13 @@ public:
      */
     template<typename U>
     Vector3(const Vector3<U>& v);
+
+    /**
+     * Contructor with other type vector
+     * @param v other vector
+     */
+    template<typename U>
+    Vector3(const Vector2<U>& v);
 
     /**
      * Assignment operator
@@ -175,6 +184,13 @@ public:
     const Vector3 mirror(const Vector3& axis) const;
 
     /**
+     * Convert to 2D Vector2
+     * @return 2d vector from this 3d vector
+     */
+    template<typename U>
+    const Vector2<U> toVector2();
+
+    /**
      * Constant unit vectors
      */
     const static Vector3 UnitI;
@@ -221,6 +237,17 @@ template<typename T>
 template<typename U>
 Vector3<T>::Vector3(const Vector3<U>& v) :
     x(v.x), y(v.y), z(v.z)
+{
+}
+
+/**
+ * Contructor with other type 2d vector
+ * @param v other vector
+ */
+template<typename T>
+template<typename U>
+Vector3<T>::Vector3(const Vector2<U>& v) :
+    x(v.x), y(v.y), z(0)
 {
 }
 
@@ -453,6 +480,17 @@ template<typename T>
 const Vector3<T> Vector3<T>::mirror(const Vector3<T>& axis) const
 {
     return add(project(axis).sub(*this).mul(2));
+}
+
+/**
+ * Convert to 2D Vector2
+ * @return 2d vector from this 3d vector
+ */
+template<typename T>
+template<typename U>
+const Vector2<U> Vector3<T>::toVector2()
+{
+    return Vector2<U>(x, y);
 }
 
 /***********************************

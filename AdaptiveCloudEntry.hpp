@@ -13,6 +13,7 @@
 // Las type cloud data
 #include "LasCloudData.hpp"
 // Math
+#include "Vector2.hpp"
 #include "Vector3.hpp"
 
 class AdaptiveCloudEntry : public CloudEntry
@@ -35,13 +36,14 @@ private:
     void loadImpl();
     // Slice and thin
     void build(CloudData::Ptr cloudData);
-
     // Type of subcloud <center,cloudptr>
-    typedef std::pair<math::Vector3d,LasCloudData::Ptr> SubCloud;
+    typedef std::pair<math::Vector2f,LasCloudData::Ptr> SubCloud;
     // Type of subcloud level <zoom,SubCloud>
     typedef std::pair<double,std::vector<SubCloud> > SubCloudLevel;
     // Subclouds <center,zoom,cloudptr>
     std::vector<SubCloudLevel> mSubclouds;
+    // Middle level of cloud
+    float middlelevel;
     // Need to update
     bool mNeedToUpdate;
 };
