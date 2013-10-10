@@ -7,8 +7,10 @@
 #include <LasCloudData.hpp>
 // Qt
 #include <QTextStream>
+// Cam wrapper
+#include "PclCameraWrapper.hpp"
 
-size_t AdaptiveCloudEntry::SegmentSize = 65536;
+size_t AdaptiveCloudEntry::SegmentSize = 6144;
 
 AdaptiveCloudEntry::AdaptiveCloudEntry() : mNeedToUpdate(false)
 {
@@ -39,16 +41,21 @@ void AdaptiveCloudEntry::visualize(pcl::visualization::PCLVisualizer *visualizer
 void AdaptiveCloudEntry::updateVisualization(pcl::visualization::PCLVisualizer *visualizer)
 {
     // If no need to update, return
-    if(!mNeedToUpdate)
-        return;
-    //
+    //if(!mNeedToUpdate)
+    //    return;
+    // Cameras vector
     std::vector<pcl::visualization::Camera> cameras;
+    // Get cameras
     visualizer->getCameras(cameras);
-
+    // Wrap first camera
+    PclCameraWrapper camWrapper(cameras[0]);
     QTextStream out(stdout);
-    out << "[AdaptiveCloudEntry] Number of camera: " << cameras.size() << '\n';
-
-    visualizer->updatePointCloud<LasCloudData::PointT>(mSubclouds[0][0]->getCloud(),getName().toStdString());
+    out << camWrapper.toString().c_str() << '\n';
+    // Calc the needed bigyo
+    if(camWrapper.zoomFactor() < 2000)
+        visualizer->updatePointCloud<LasCloudData::PointT>((mSubclouds[1].second[1].second)->getCloud(),getName().toStdString());
+    else
+        visualizer->updatePointCloud<LasCloudData::PointT>((mSubclouds[0].second[0].second)->getCloud(),getName().toStdString());
 }
 
 void AdaptiveCloudEntry::thinCloudBy(CloudData::Ptr cloudData, float level)
@@ -62,9 +69,9 @@ void AdaptiveCloudEntry::thinCloudBy(CloudData::Ptr cloudData, float level)
     if(!cloud)
         return;
     // Thinning the cloud
-    QTextStream out(stdout);
+    //QTextStream out(stdout);
     // Log before
-    out << "[AdaptiveCloudEntry] Before thinning: " << cloud->size() << '\n';
+    //out << "[AdaptiveCloudEntry] Before thinning: " << cloud->size() << '\n';
     // New size
     size_t newSize = cloud->size() / level;
     // Copy points
@@ -73,7 +80,7 @@ void AdaptiveCloudEntry::thinCloudBy(CloudData::Ptr cloudData, float level)
     // Resize the cloud
     cloud->resize(newSize);
     // Log after
-    out << "[AdaptiveCloudEntry] After thinning: " << cloud->size() << '\n';
+    //out << "[AdaptiveCloudEntry] After thinning: " << cloud->size() << '\n';
 }
 
 void AdaptiveCloudEntry::thinCloudTo(CloudData::Ptr cloudData, size_t size)
@@ -98,10 +105,6 @@ void AdaptiveCloudEntry::loadImpl()
     QFileInfo fileinfo(getFilePath());
     if(fileinfo.suffix() != "las")
         return;
-
-    QTextStream out(stdout);
-    out << "[AdaptiveCloudEntry] Loaded cloud\n";
-
     // Load a las file
     mData.reset(new LasCloudData());
     mData->load(getFilePath());
@@ -111,7 +114,7 @@ void AdaptiveCloudEntry::loadImpl()
 
 void getLeafIndices(pcl::octree::OctreeNode* node, std::vector<int>& indices)
 {
-    // If leaf, add points
+    // If branch, recursive
     if(node->getNodeType() == pcl::octree::BRANCH_NODE)
     {
         auto branchNode = static_cast<pcl::octree::OctreePointCloudPointVector<LasCloudData::PointT>::BranchNode*>(node);
@@ -120,7 +123,7 @@ void getLeafIndices(pcl::octree::OctreeNode* node, std::vector<int>& indices)
             if(branchNode->hasChild(i))
                 getLeafIndices(branchNode->getChildPtr(i), indices);
     }
-    // If branch, recursive
+    // If leaf, add points
     else if(node->getNodeType() == pcl::octree::LEAF_NODE)
     {
         auto leafNode = static_cast<pcl::octree::OctreePointCloudPointVector<LasCloudData::PointT>::LeafNode*>(node);
@@ -143,12 +146,12 @@ void AdaptiveCloudEntry::build(CloudData::Ptr cloudData)
         return;
     }
     // Divide and conquer (höhö)
-    pcl::octree::OctreePointCloudPointVector<LasCloudData::PointT> divider((double)cloud->size() / (double)SegmentSize);
+    pcl::octree::OctreePointCloudPointVector<LasCloudData::PointT> divider((double)SegmentSize);
     divider.setInputCloud(cloud);
     divider.addPointsFromInputCloud();
 
     QTextStream out(stdout);
-    out << "[Divide] Start\n";
+    // out << "[Divide] Start\n";
     int n = 0;
 
     n = 0;
@@ -165,7 +168,10 @@ void AdaptiveCloudEntry::build(CloudData::Ptr cloudData)
         getLeafIndices(it.getCurrentOctreeNode(), indices);
         // Resize subcloud levels
         if(it.getCurrentOctreeDepth() + 1 > mSubclouds.size())
+        {
             mSubclouds.resize(it.getCurrentOctreeDepth() + 1);
+            mSubclouds.back().first = 0.0;
+        }
         // The new subcloud data object
         LasCloudData::Ptr newSubCloud(new LasCloudData());
         // Create en empty cloud
@@ -178,18 +184,20 @@ void AdaptiveCloudEntry::build(CloudData::Ptr cloudData)
         sumsize += newSubCloud->getCloud()->size();
         // Get level vector
         auto& level = mSubclouds[it.getCurrentOctreeDepth()];
+        //
+        math::Vector3d center;
         // Add the new cloud
-        level.push_back(newSubCloud);
+        level.second.push_back(std::pair<math::Vector3d,LasCloudData::Ptr>(center, newSubCloud));
 
         ++n;
     }
     // Log result
     out << "[AdaptiveCloudEntry] Original point number: " << cloud->size() << ", Segmented and thinned points: " << sumsize << '\n';
-    n = 0;
-    out << "[AdaptiveCloudEntry] Generated levels: " << mSubclouds.size() << '\n';
-    for(auto& level : mSubclouds)
-    {
-        out << "[AdaptiveCloudEntry] Segment on level" << n++ << ": " << level.size() << '\n';
-    }
+    //n = 0;
+    //out << "[AdaptiveCloudEntry] Generated levels: " << mSubclouds.size() << '\n';
+    //for(auto& level : mSubclouds)
+    //{
+    //    out << "[AdaptiveCloudEntry] Segment on level" << n++ << ": " << level.size() << '\n';
+    //}
     out.flush();
 }

@@ -84,6 +84,7 @@
     </property>
     <addaction name="actionBackground_Color"/>
     <addaction name="actionUse_adaptive_clouds"/>
+    <addaction name="actionPrint_camera_details"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuView"/>
@@ -201,6 +202,17 @@
    </property>
    <property name="text">
     <string>Use adaptive clouds</string>
+   </property>
+  </action>
+  <action name="actionPrint_camera_details">
+   <property name="text">
+    <string>Print camera details</string>
+   </property>
+   <property name="toolTip">
+    <string>Print camera details</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+C</string>
    </property>
   </action>
  </widget>

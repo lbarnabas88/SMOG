@@ -15,8 +15,11 @@
 #include <iostream>
 // Backend
 #include "CloudStore.hpp"
+#include "AdaptiveCloudEntry.hpp"
 #include "PcdCloudData.hpp"
 #include "LasCloudData.hpp"
+// Tools
+#include "PclCameraWrapper.hpp"
 
 /**
  * Constructor of the main window.
@@ -193,4 +196,16 @@ void SmogMainWindow::on_actionClose_Cloud_triggered()
         // Inc deleted
         ++deleted;
     }
+}
+
+void SmogMainWindow::on_actionPrint_camera_details_triggered()
+{
+    for(size_t i = 0; i < CloudStore::getInstance().getNumberOfClouds(); ++i)
+    {
+        auto& cloudEntry = CloudStore::getInstance().getCloud(i);
+        auto adaptiveCloudEntry = dynamic_cast<AdaptiveCloudEntry*>(cloudEntry.get());
+        if(adaptiveCloudEntry)
+            adaptiveCloudEntry->updateVisualization(&ui->CloudVisualizer->visualizer());
+    }
+    ui->CloudVisualizer->update();
 }
