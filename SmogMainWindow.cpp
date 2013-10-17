@@ -2,7 +2,6 @@
 #include "ui_SmogMainWindow.h"
 // Qt
 #include <QFileDialog>
-#include <QTextStream>
 #include <QColorDialog>
 #include <QSettings>
 // Pcl
@@ -46,6 +45,7 @@ SmogMainWindow::SmogMainWindow(QWidget *parent) :
     ui->CloudList->setModel(mCloudModel.get());
     // Register visualizer events
     ui->CloudVisualizer->visualizer().registerMouseCallback(&SmogMainWindow::onVisualizerMouse, *this, this);
+    ui->CloudVisualizer->visualizer().registerKeyboardCallback(&SmogMainWindow::onVisualizerKeyboard, *this, this);
     // Connent model to window
     connect(mCloudModel.get(), SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)), this, SLOT(cloudModelChanged(const QModelIndex&, const QModelIndex&)));
     // Start maximized
@@ -171,6 +171,15 @@ void SmogMainWindow::onVisualizerMouse(const pcl::visualization::MouseEvent &me,
 {
     QTextStream out(stdout);
     out << "[Main] Viz Mouse\n";
+
+    for(size_t i = 0; i < CloudStore::getInstance().getNumberOfClouds(); ++i)
+    {
+        AdaptiveCloudEntry* cloudEntry = dynamic_cast<AdaptiveCloudEntry*>(CloudStore::getInstance().getCloud(i).get());
+        if(cloudEntry)
+        {
+            cloudEntry->updateVisualization(&ui->CloudVisualizer->visualizer());
+        }
+    }
 }
 
 void SmogMainWindow::onVisualizerKeyboard(const pcl::visualization::KeyboardEvent &ke, void *userData)

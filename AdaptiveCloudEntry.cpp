@@ -9,8 +9,10 @@
 #include <QTextStream>
 // Cam wrapper
 #include "PclCameraWrapper.hpp"
+// Log
+#include "log.hpp"
 
-size_t AdaptiveCloudEntry::SegmentSize = 500000;
+size_t AdaptiveCloudEntry::SegmentSize = 100000;
 
 AdaptiveCloudEntry::AdaptiveCloudEntry() : mNeedToUpdate(false)
 {
@@ -50,7 +52,7 @@ void AdaptiveCloudEntry::updateVisualization(pcl::visualization::PCLVisualizer *
     // Wrap first camera
     PclCameraWrapper camWrapper(cameras[0]);
     QTextStream out(stdout);
-    out << camWrapper.toString().c_str() << '\n';
+    //out << camWrapper.toString().c_str() << '\n';
     // Camera pos and dir
     math::Vector3d p = camWrapper.getPos();
     math::Vector3d v = camWrapper.getFocal() - p;
@@ -62,23 +64,70 @@ void AdaptiveCloudEntry::updateVisualization(pcl::visualization::PCLVisualizer *
     math::Vector2f lookPoint(p.x + t * v.x, p.y + t * v.y);
     // Get level index
     size_t levelIndex = 0;
-    if(camWrapper.zoomFactor() < 2000)
-        levelIndex = 4;
-    else if(camWrapper.zoomFactor() < 3000)
-        levelIndex = 3;
-    else if(camWrapper.zoomFactor() < 4000)
-        levelIndex = 2;
-    else if(camWrapper.zoomFactor() < 5000)
-        levelIndex = 1;
+    // Search level
+    for(size_t i = 0; i < mSubclouds.size(); ++i)
+    {
+        SubCloudLevel& level = mSubclouds[i];
+        if(camWrapper.zoomFactor() < level.zoom)
+            levelIndex = i;
+    }
     // Get level
-    auto& level = mSubclouds[levelIndex];
+    SubCloudLevel& level = mSubclouds[levelIndex];
     // Closest
-    auto& closest = level.second.front();
+    SubCloud& closest = level.clouds.front();
+    // Matrix indices
+    math::Vector2<size_t> indices(0,0);
+
     // Search
-    for(auto& subCloud : level.second)
-        if( (lookPoint - subCloud.first).length() < (lookPoint - closest.first).length() )
-            closest = subCloud;
-    visualizer->updatePointCloud<LasCloudData::PointT>(closest.second->getCloud(),getName().toStdString());
+    for(size_t i = 0; i < level.map.getWidth(); ++i)
+        for(size_t j = 0; j < level.map.getHeight(); ++j)
+        {
+            int index = level.map(i,j);
+            if(index != -1)
+            {
+                SubCloud& cloud = level.clouds[index];
+                if(cloud.area.isPointIn(lookPoint))
+                {
+                    closest = cloud;
+                    indices.set(i,j);
+                }
+            }
+        }
+    // Concatenate neighbourhood
+    DBOUT("[APC] This segment: " << indices);
+    pcl::PointCloud<LasCloudData::PointT>::Ptr slice(new pcl::PointCloud<LasCloudData::PointT>());
+    for(size_t i = max(size_t(1),indices.x) - 1; i < min(level.map.getWidth() - 1,indices.x + 1) + 1; ++i)
+    {
+        for(size_t j = max(size_t(1),indices.y) - 1; j < min(level.map.getHeight() - 1,indices.y + 1) + 1; ++j)
+        {
+            if(level.map(i,j) != -1)
+            {
+                DBOUT("[APC] Neigbour segment: " << i << ' ' << j);
+                SubCloud& subCloud = level.clouds[level.map(i,j)];
+                for(auto& p : *subCloud.cloud->getCloud().get())
+                    slice->push_back(p);
+            }
+        }
+    }
+    // Update visualizer
+    visualizer->updatePointCloud<LasCloudData::PointT>(slice,getName().toStdString());
+/*
+    // Lookoutpoint visualize
+    pcl::PointXYZRGB lookPointViz;
+    lookPointViz.x = lookPoint.x;
+    lookPointViz.y = lookPoint.y;
+    lookPointViz.z = middlelevel;
+    lookPointViz.r = 255;
+    lookPointViz.g = 10;
+    lookPointViz.b = 10;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr lookPointCloud(new pcl::PointCloud<pcl::PointXYZRGB>(1,1,lookPointViz));
+
+    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgbColorHandler(lookPointCloud);
+    if(!visualizer->updatePointCloud<pcl::PointXYZRGB>(lookPointCloud, rgbColorHandler,"LookPoint"))
+    {
+        visualizer->addPointCloud<pcl::PointXYZRGB>(lookPointCloud, rgbColorHandler, "LookPoint");
+    }
+*/
 }
 
 void AdaptiveCloudEntry::thinCloudBy(CloudData::Ptr cloudData, float level)
@@ -135,29 +184,6 @@ void AdaptiveCloudEntry::loadImpl()
     build(mData);
 }
 
-void getLeafIndices(pcl::octree::OctreeNode* node, std::vector<int>& indices)
-{
-    // If branch, recursive
-    if(node->getNodeType() == pcl::octree::BRANCH_NODE)
-    {
-        auto branchNode = static_cast<pcl::octree::OctreePointCloudPointVector<LasCloudData::PointT>::BranchNode*>(node);
-        // Call for all child
-        for(size_t i = 0; i < 8; ++i)
-            if(branchNode->hasChild(i))
-                getLeafIndices(branchNode->getChildPtr(i), indices);
-    }
-    // If leaf, add points
-    else if(node->getNodeType() == pcl::octree::LEAF_NODE)
-    {
-        auto leafNode = static_cast<pcl::octree::OctreePointCloudPointVector<LasCloudData::PointT>::LeafNode*>(node);
-        // Copy point indices
-        std::vector<int> leafIndices;
-        leafNode->getContainerPtr()->getPointIndices(leafIndices);
-        for(int& index : leafIndices)
-            indices.push_back(index);
-    }
-}
-
 void AdaptiveCloudEntry::build(CloudData::Ptr cloudData)
 {
     // Convert to lascloud
@@ -168,14 +194,6 @@ void AdaptiveCloudEntry::build(CloudData::Ptr cloudData)
         mData = cloudData;
         return;
     }
-    // Divide and conquer (höhö)
-    //pcl::octree::OctreePointCloudPointVector<LasCloudData::PointT> divider((double)SegmentSize);
-    //divider.setInputCloud(cloud);
-    //divider.addPointsFromInputCloud();
-
-    QTextStream out(stdout);
-    out << "[Divide] Start\n";
-
     // Clear subclouds
     mSubclouds.clear();
     // Bounding box of the cloud
@@ -213,17 +231,14 @@ void AdaptiveCloudEntry::build(CloudData::Ptr cloudData)
         needToGoDeeper = false;
         // Grid number
         size_t gridN = pow(2,depth);
-        // Create temorary cloud matrix
-        int cloudMatrix[gridN][gridN];
-        for(size_t i = 0; i < gridN; ++i)
-            for(size_t j = 0; j < gridN; ++j)
-                cloudMatrix[i][j] = -1;
         // Create subcloud level
         mSubclouds.push_back(SubCloudLevel());
         // Reference
         SubCloudLevel& level = mSubclouds.back();
         // Reset zoom
-        level.first = 1.0;
+        level.zoom = 4000.0 / depth;
+        // Reset map
+        level.map.reset(gridN, gridN);
         // Divide
         for(auto& point : *cloud)
         {
@@ -239,98 +254,46 @@ void AdaptiveCloudEntry::build(CloudData::Ptr cloudData)
             if(yi >= gridN)
                 yi = gridN - 1;
             // Get the subcloud, and add. If it's doesn't exist, create
-            if(cloudMatrix[xi][yi] == -1)
+            if(level.map(xi, yi) == -1)
             {
                 // Create new subcloud
-                level.second.push_back(SubCloud());
+                level.clouds.push_back(SubCloud());
                 // Create cloud data
-                level.second.back().second.reset(new LasCloudData());
+                level.clouds.back().cloud.reset(new LasCloudData());
                 // Create cloud on cloud data
-                level.second.back().second->createCloud();
+                level.clouds.back().cloud->createCloud();
                 // Save pointer to the matrix
-                cloudMatrix[xi][yi] = level.second.size() - 1;
+                level.map(xi, yi) = level.clouds.size() - 1;
             }
             // Add to this cloud
-            level.second[cloudMatrix[xi][yi]].second->getCloud()->push_back(point);
+            level.clouds[level.map(xi, yi)].cloud->getCloud()->push_back(point);
         }
         // Post process on subclouds of the level
-        for(auto& subCloud : level.second)
+        for(auto& subCloud : level.clouds)
         {
             // Thin clouds if greater
-            if(subCloud.second->getCloud()->size() > SegmentSize)
+            if(subCloud.cloud->getCloud()->size() > SegmentSize)
             {
                 // Need deeper!
                 needToGoDeeper = true;
                 // Thin this
-                thinCloudTo(subCloud.second,SegmentSize);
+                thinCloudTo(subCloud.cloud,SegmentSize);
             }
         }
         // Calc center points
         for(size_t i = 0; i < gridN; ++i)
+        {
             for(size_t j = 0; j < gridN; ++j)
             {
-                if(cloudMatrix[i][j] == -1)
+                if(level.map(i,j) == -1)
                     continue;
-                auto& cloud = level.second[cloudMatrix[i][j]];
+                SubCloud& cloud = level.clouds[level.map(i, j)];
                 math::Vector2f gridSize = size / gridN;
-                cloud.first.set((i + 0.5) * gridSize.x,(j + 0.5) * gridSize.y);
-                cloud.first += minmax.first;
+                cloud.area.min.set(i * gridSize.x, j * gridSize.y);
+                cloud.area.min += minmax.first;
+                cloud.area.max = cloud.area.min + gridSize;
+                cloud.center = (cloud.area.min + cloud.area.max) / 2.0f;
             }
-    }
-    // Log the result
-    out << "[Divide] Number of levels: " << mSubclouds.size() << '\n';
-    for(auto& level : mSubclouds)
-    {
-        out << "[Divide] Cloud on level: " << level.second.size() << '\n';
-    }
-    out.flush();
-
-    /*int n = 0;
-
-    n = 0;
-    mSubclouds.clear();
-    auto end_depth_it = divider.depth_end();
-
-    size_t sumsize = 0;
-
-    for(auto it = divider.depth_begin();it != end_depth_it; ++it)
-    {
-        // Indices of this sub cloud
-        std::vector<int> indices;
-        // Get indices
-        getLeafIndices(it.getCurrentOctreeNode(), indices);
-        // Resize subcloud levels
-        if(it.getCurrentOctreeDepth() + 1 > mSubclouds.size())
-        {
-            mSubclouds.resize(it.getCurrentOctreeDepth() + 1);
-            mSubclouds.back().first = 0.0;
         }
-        // The new subcloud data object
-        LasCloudData::Ptr newSubCloud(new LasCloudData());
-        // Create en empty cloud
-        auto newCloud = newSubCloud->createCloud();
-        // Copy datas to the subcloud
-        pcl::copyPointCloud(*cloud, indices, *newCloud);
-        // Thin cloud if branch node
-        if(it.isBranchNode())
-            thinCloudTo(newSubCloud, SegmentSize);
-        sumsize += newSubCloud->getCloud()->size();
-        // Get level vector
-        auto& level = mSubclouds[it.getCurrentOctreeDepth()];
-        //
-        math::Vector3d center;
-        // Add the new cloud
-        level.second.push_back(std::pair<math::Vector3d,LasCloudData::Ptr>(center, newSubCloud));
-
-        ++n;
     }
-    // Log result
-    out << "[AdaptiveCloudEntry] Original point number: " << cloud->size() << ", Segmented and thinned points: " << sumsize << '\n';
-    //n = 0;
-    //out << "[AdaptiveCloudEntry] Generated levels: " << mSubclouds.size() << '\n';
-    //for(auto& level : mSubclouds)
-    //{
-    //    out << "[AdaptiveCloudEntry] Segment on level" << n++ << ": " << level.size() << '\n';
-    //}
-    out.flush();*/
 }

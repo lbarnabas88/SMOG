@@ -6,7 +6,6 @@
 #include <pcl/point_types.h>
 // Qt
 #include <QSettings>
-#include <QTextStream>
 
 /**
  * @brief Point cloud visualizer constructor
@@ -17,6 +16,7 @@ QPointCloudVisualizer::QPointCloudVisualizer(QWidget *parent) :
 {
     // Set render window
     SetRenderWindow(mVisualizer.getRenderWindow());
+    mVisualizer.setupInteractor(GetInteractor(),GetRenderWindow());
     // Empty cloud
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr emptyCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     // Add empty cloud
@@ -26,7 +26,6 @@ QPointCloudVisualizer::QPointCloudVisualizer(QWidget *parent) :
     // Get backgorund color
     QColor bgColor = settings.value("visualizer/bgcolor").value<QColor>();
     // Set background color
-    QTextStream out(stdout);
     if(bgColor.isValid())
         mVisualizer.setBackgroundColor(bgColor.redF(), bgColor.greenF(), bgColor.blueF());
 }
