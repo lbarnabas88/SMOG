@@ -84,7 +84,6 @@
     </property>
     <addaction name="actionBackground_Color"/>
     <addaction name="actionUse_adaptive_clouds"/>
-    <addaction name="actionPrint_camera_details"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuView"/>
@@ -116,9 +115,8 @@
   </widget>
   <action name="actionLoad_Cloud">
    <property name="icon">
-    <iconset theme="document-open">
-     <normaloff/>
-    </iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/actions/open_cloud</normaloff>:/actions/open_cloud</iconset>
    </property>
    <property name="text">
     <string>Load Cloud</string>
@@ -132,9 +130,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="application-exit">
-     <normaloff/>
-    </iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/actions/exit</normaloff>:/actions/exit</iconset>
    </property>
    <property name="text">
     <string>Quit</string>
@@ -148,9 +145,8 @@
   </action>
   <action name="actionIncrease_point_size">
    <property name="icon">
-    <iconset theme="list-add">
-     <normaloff/>
-    </iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/actions/point_increase</normaloff>:/actions/point_increase</iconset>
    </property>
    <property name="text">
     <string>Increase point size</string>
@@ -161,9 +157,8 @@
   </action>
   <action name="actionDecrease_point_size">
    <property name="icon">
-    <iconset theme="list-remove">
-     <normaloff/>
-    </iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/actions/point_decrease</normaloff>:/actions/point_decrease</iconset>
    </property>
    <property name="text">
     <string>Decrease point size</string>
@@ -182,9 +177,8 @@
   </action>
   <action name="actionClose_Cloud">
    <property name="icon">
-    <iconset theme="window-close">
-     <normaloff/>
-    </iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/actions/close_cloud</normaloff>:/actions/close_cloud</iconset>
    </property>
    <property name="text">
     <string>Close Cloud</string>
@@ -202,17 +196,6 @@
    </property>
    <property name="text">
     <string>Use adaptive clouds</string>
-   </property>
-  </action>
-  <action name="actionPrint_camera_details">
-   <property name="text">
-    <string>Print camera details</string>
-   </property>
-   <property name="toolTip">
-    <string>Print camera details</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+C</string>
    </property>
   </action>
  </widget>

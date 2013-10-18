@@ -2,4 +2,12 @@
     <qresource prefix="/icons">
         <file alias="appicon">factory.png</file>
     </qresource>
+    <qresource prefix="/actions">
+        <file alias="open_cloud">Primo Icons/PNG/48x48/folder_open.png</file>
+        <file alias="save_cloud">Primo Icons/PNG/48x48/save.png</file>
+        <file alias="point_increase">Primo Icons/PNG/48x48/sub_black_add.png</file>
+        <file alias="point_decrease">Primo Icons/PNG/48x48/sub_black_remove.png</file>
+        <file alias="close_cloud">Primo Icons/PNG/48x48/folder_delete.png</file>
+        <file alias="exit">Primo Icons/PNG/48x48/power_black.png</file>
+    </qresource>
 </RCC>
