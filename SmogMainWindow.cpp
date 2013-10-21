@@ -172,12 +172,15 @@ void SmogMainWindow::onVisualizerMouse(const pcl::visualization::MouseEvent &me,
     QTextStream out(stdout);
     out << "[Main] Viz Mouse\n";
 
-    for(size_t i = 0; i < CloudStore::getInstance().getNumberOfClouds(); ++i)
+    if(!ui->actionLock_adaptive_view->isChecked())
     {
-        AdaptiveCloudEntry* cloudEntry = dynamic_cast<AdaptiveCloudEntry*>(CloudStore::getInstance().getCloud(i).get());
-        if(cloudEntry)
+        for(size_t i = 0; i < CloudStore::getInstance().getNumberOfClouds(); ++i)
         {
-            cloudEntry->updateVisualization(&ui->CloudVisualizer->visualizer());
+            AdaptiveCloudEntry* cloudEntry = dynamic_cast<AdaptiveCloudEntry*>(CloudStore::getInstance().getCloud(i).get());
+            if(cloudEntry)
+            {
+                cloudEntry->updateVisualization(&ui->CloudVisualizer->visualizer());
+            }
         }
     }
 }

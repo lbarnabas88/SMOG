@@ -84,6 +84,7 @@
     </property>
     <addaction name="actionBackground_Color"/>
     <addaction name="actionUse_adaptive_clouds"/>
+    <addaction name="actionLock_adaptive_view"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuView"/>
@@ -112,6 +113,7 @@
    <addaction name="actionIncrease_point_size"/>
    <addaction name="actionDecrease_point_size"/>
    <addaction name="separator"/>
+   <addaction name="actionLock_adaptive_view"/>
   </widget>
   <action name="actionLoad_Cloud">
    <property name="icon">
@@ -196,6 +198,21 @@
    </property>
    <property name="text">
     <string>Use adaptive clouds</string>
+   </property>
+  </action>
+  <action name="actionLock_adaptive_view">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/actions/lock_view</normaloff>:/actions/lock_view</iconset>
+   </property>
+   <property name="text">
+    <string>Lock adaptive view</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Space</string>
    </property>
   </action>
  </widget>

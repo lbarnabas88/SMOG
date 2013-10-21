@@ -9,5 +9,6 @@
         <file alias="point_decrease">Primo Icons/PNG/48x48/sub_black_remove.png</file>
         <file alias="close_cloud">Primo Icons/PNG/48x48/folder_delete.png</file>
         <file alias="exit">Primo Icons/PNG/48x48/power_black.png</file>
+        <file alias="lock_view">Primo Icons/PNG/48x48/lock.png</file>
     </qresource>
 </RCC>
