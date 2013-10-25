@@ -6,6 +6,8 @@
 // Pcl
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+// Liblas
+#include <liblas/liblas.hpp>
 
 class LasCloudData : public CloudData
 {
@@ -27,6 +29,8 @@ public:
     const pcl::PointCloud<PointT>::Ptr getCloud() const { return mData; }
     // Create empty cloud
     pcl::PointCloud<PointT>::Ptr createCloud();
+    // Las point format id
+    static liblas::PointFormatName PointFormatName;
 private:
     // Data
     pcl::PointCloud<PointT>::Ptr mData;

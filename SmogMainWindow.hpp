@@ -50,8 +50,6 @@ private slots:
 
     void on_actionClose_Cloud_triggered();
 
-    void on_actionPrint_camera_details_triggered();
-
 private:
     // User interface object
     Ui::SmogMainWindow *ui;

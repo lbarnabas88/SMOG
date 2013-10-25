@@ -53,6 +53,13 @@ public:
 	template<typename U>
 	inline Vector2& operator =(const Vector2<U>& v);
 
+    /**
+     * Equal operator
+     * @return true if all coordinates are equal
+     */
+    template<typename U>
+    inline bool operator ==(const Vector2<U>& v) const;
+
 	/**
 	 * Get size of the vector
 	 * @return unsigned long size of this vector
@@ -239,6 +246,17 @@ template<typename U>
 inline Vector2<T>& Vector2<T>::operator =(const Vector2<U>& v)
 {
 	set(v.x, v.y);
+}
+
+/**
+ * Equal operator
+ * @return true if all coordinates are equal
+ */
+template<typename T>
+template<typename U>
+inline bool Vector2<T>::operator ==(const Vector2<U>& v) const
+{
+    return x == v.x && y == v.y;
 }
 
 /**

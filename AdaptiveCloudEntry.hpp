@@ -35,7 +35,7 @@ private:
     // Load reimplement
     void loadImpl();
     // Slice and thin
-    void build(CloudData::Ptr cloudData);
+    void build(CloudData::Ptr &cloudData);
     // Area struct
     struct Area
     {
@@ -52,6 +52,8 @@ private:
         math::Vector2f center;
         Area area;
         LasCloudData::Ptr cloud;
+        QString filename;
+        bool loaded;
     };
 
     class IndexMap
@@ -85,6 +87,27 @@ private:
             reset();
         }
 
+        bool isIn(size_t i, size_t j) const
+        {
+            return i < getWidth() && j < getHeight();
+        }
+
+        bool isValid(size_t i, size_t j) const
+        {
+            if(!isIn(i,j))
+                return false;
+            return index(i,j) >= 0;
+        }
+
+        math::Vector2<size_t> indexOf(int value)
+        {
+            for(size_t i = 0; i < getWidth(); ++i)
+                for(size_t j = 0; j < getHeight(); ++j)
+                    if(index(i,j) == value)
+                        return math::Vector2<size_t>(i,j);
+            return math::Vector2<size_t>(getWidth(), getHeight());
+        }
+
         inline const size_t& getWidth() const { return mWidth; }
         inline const size_t& getHeight() const { return mHeight; }
         inline const int& index(size_t i, size_t j) const { return mIndices[j * mWidth + i]; }
@@ -105,10 +128,30 @@ private:
     };
     // Subclouds
     std::vector<SubCloudLevel> mSubclouds;
+    // Add subcloud level, and get reference to it.
+    SubCloudLevel& addLevel(size_t gridN, const std::pair<math::Vector3f,math::Vector3f>& bounds);
+    // Add subcloud
+    SubCloud& needSubCloud(SubCloudLevel& level, size_t depth, size_t x, size_t y, bool createLoaded = false);
+    // Convert x,y to xi, yi
+    static math::Vector2<size_t> point2indices(float x, float y, size_t gridN, const math::Vector2f& min, const math::Vector2f &max);
+    // GridN from depth
+    static size_t depth2gridn(const size_t& depth);
+    // Segment base name
+    QString mSegmentBase;
     // Middle level of cloud
     float middlelevel;
+    // Generate subcloud filename
+    QString genSubcloudFilename(size_t level, int xi, int yi);
+    // Load subcloud
+    void loadSubcloud(size_t level, int xi, int yi);
+    // Unload subcloud
+    void unloadSubcloud(size_t level, int xi, int yi);
+    // Save subcloud
+    void saveSubcloud(size_t level, int xi, int yi);
     // Need to update
     bool mNeedToUpdate;
+    // Last visualized segment
+    math::Vector3<size_t> mLastSegment;
 };
 
 #endif // ADAPTIVECLOUDENTRY_HPP

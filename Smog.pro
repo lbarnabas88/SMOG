@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -34,3 +34,5 @@ include(main.pri)
 include(qtpcl.pri)
 include(backend.pri)
 include(tools.pri)
+include(math.pri)
+include(data.pri)

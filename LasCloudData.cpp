@@ -1,10 +1,10 @@
 #include "LasCloudData.hpp"
 // Std
 #include <fstream>
-// Liblas
-#include <liblas/liblas.hpp>
 // Pcl
 #include <pcl/octree/octree.h>
+
+liblas::PointFormatName LasCloudData::PointFormatName = liblas::ePointFormat0;
 
 LasCloudData::LasCloudData()
 {
@@ -24,6 +24,8 @@ bool LasCloudData::load(const QString &filepath)
     mData.reset(new pcl::PointCloud<PointT>());
     // Resize point to las data count
     mData->resize(header.GetPointRecordsCount());
+    // Get point format name
+    PointFormatName = header.GetDataFormatId();
     // Copy data
     for(size_t i = 0; reader.ReadNextPoint(); ++i)
     {
@@ -45,9 +47,25 @@ bool LasCloudData::load(const QString &filepath)
 
 bool LasCloudData::save(const QString &filepath)
 {
-    Q_UNUSED(filepath);
-    // Isn't implemented yet
-    return false;
+    // Output stream
+    std::ofstream ofs(filepath.toStdString().c_str(), std::ios::out | std::ios::binary);
+    // Create header
+    liblas::Header header;
+    // Set format
+    header.SetDataFormatId(PointFormatName);
+    // Create las writer
+    liblas::Writer writer(ofs, header);
+    // Add points
+    for(const PointT& p : (*mData))
+    {
+        liblas::Point q;
+        q.SetX(p.x);
+        q.SetY(p.y);
+        q.SetZ(p.z);
+        writer.WritePoint(q);
+    }
+    // Success
+    return true;
 }
 
 pcl::PointCloud<LasCloudData::PointT>::Ptr LasCloudData::createCloud()
