@@ -28,6 +28,12 @@
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
          <widget class="QTableView" name="CloudList">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
@@ -38,7 +44,7 @@
       <widget class="QPointCloudVisualizer" name="CloudVisualizer" native="true">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>1</horstretch>
+         <horstretch>4</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
@@ -47,6 +53,14 @@
        </property>
        <property name="focusPolicy">
         <enum>Qt::ClickFocus</enum>
+       </property>
+      </widget>
+      <widget class="QMapWidget" name="Map" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>2</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
       </widget>
      </widget>
@@ -96,7 +110,7 @@
     <enum>LeftToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>false</bool>
+    <bool>true</bool>
    </attribute>
    <addaction name="actionLoad_Cloud"/>
    <addaction name="actionClose_Cloud"/>
@@ -114,6 +128,17 @@
    <addaction name="actionDecrease_point_size"/>
    <addaction name="separator"/>
    <addaction name="actionLock_adaptive_view"/>
+  </widget>
+  <widget class="QToolBar" name="map_toolbar">
+   <property name="windowTitle">
+    <string>toolBar_2</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>RightToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
   </widget>
   <action name="actionLoad_Cloud">
    <property name="icon">
@@ -222,6 +247,12 @@
    <class>QPointCloudVisualizer</class>
    <extends>QWidget</extends>
    <header location="global">QPointCloudVisualizer.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QMapWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QMapWidget.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

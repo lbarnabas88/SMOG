@@ -22,6 +22,7 @@ CacheDatabase::CacheDatabase(QObject *parent)
 
 CacheDatabase::~CacheDatabase()
 {
+    closeDB();
 }
 
 QString CacheDatabase::getField(const QString &what, const QString &where, const QString &value)
@@ -80,8 +81,8 @@ bool CacheDatabase::prepareDB()
     {
         // Sql query object
         QSqlQuery query;
-        ret = query.exec(QString("CREATE %1 adaptive_cache (%2 TEXT PRIMARY KEY,%3 TEXT,%4 TEXT)").arg(CacheTableName, CacheColumnCloudPath, CacheColumnSegmentBase, CacheColumnMap));
-        DBOUT("[CacheDatabase] Create table..." << ret);
+        ret = query.exec(QString("CREATE %1 (%2 TEXT PRIMARY KEY,%3 TEXT,%4 TEXT)").arg(CacheTableName, CacheColumnCloudPath, CacheColumnSegmentBase, CacheColumnMap));
+        DBOUT("[CacheDatabase] Create table..." << (ret?"DONE":"FAIL"));
     }
     // Return the result
     return ret;
@@ -97,14 +98,16 @@ int CacheDatabase::insertCacheEntry(const QString &cloud_path, const QString &se
         // The query
         QSqlQuery query;
         // Exec
-        bool ret = query.exec(QString("INSERT INTO %1 ('%2','%3','%4')").arg(CacheTableName,cloud_path, segment_path, mapStr));
+        bool ret = query.exec(QString("INSERT INTO %1 VALUES ('%2','%3','%4')").arg(CacheTableName,cloud_path, segment_path, mapStr));
+
+        DBOUT("[CacheDatabase] Insert sql: " << QString("INSERT INTO %1 VALUES ('%2','%3','%4')").arg(CacheTableName,cloud_path, segment_path, mapStr).toStdString());
         // If success
         if(ret)
         {
             // Get the id
             retId = query.lastInsertId().toInt();
         }
-        DBOUT("[CacheDatabase] Insert cache data..." << (ret?"DONE: RetId:":"FAIL:") << retId);
+        DBOUT("[CacheDatabase] Insert cache data..." << (ret?"DONE":"FAIL:") << ": RetId=" << retId);
     }
     // Return the id
     return retId;
@@ -120,9 +123,14 @@ bool CacheDatabase::updateCacheEntry(const QString &cloud_path, const QString &s
 
 void CacheDatabase::saveCacheEntry(const QString &cloud_path, const QString &segment_path, const QString &mapStr)
 {
-    if(insertCacheEntry(cloud_path, segment_path, mapStr) == -1)
+    if(!updateCacheEntry(cloud_path, segment_path, mapStr))
     {
-        updateCacheEntry(cloud_path, segment_path, mapStr);
+        DBOUT("[CacheDatabase] Need insert");
+        insertCacheEntry(cloud_path, segment_path, mapStr);
+    }
+    else
+    {
+        DBOUT("[CacheDatabse] Cache updated");
     }
 }
 

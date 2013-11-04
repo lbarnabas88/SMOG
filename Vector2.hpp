@@ -134,10 +134,16 @@ public:
     inline const T length2() const;
 
 	/**
-	 * Normalize the vector
+     * Get the normalized the vector
 	 * @return normalized vector
 	 */
 	inline const Vector2 normalized() const;
+
+    /**
+     * Normalize the vector
+     * @return this vector normalized
+     */
+    inline Vector2& normalize();
 
 	/**
 	 * Dot product calculation
@@ -148,7 +154,7 @@ public:
 
 	/**
 	 * Cross product of the 2 template<typename T>vector
-	 * In 2D it's only a number (the third coordinate, becouse the first 2 is 0)!
+     * In 2D it's only a number (the third coordinate, because the first 2 is 0)!
 	 * @param v second vector in the product
 	 * @return cross product of the vectors
 	 */
@@ -188,6 +194,13 @@ public:
 	 * @return projected vector to the axis
 	 */
 	const Vector2 mirror(const Vector2& axis) const;
+
+    /**
+     * Convert to 2D Vector2
+     * @return 2d vector from this 2d vector with type U
+     */
+    template<typename U>
+    const Vector2<U> toVector2();
 
 	/**
 	 * Constant unit vectors
@@ -396,6 +409,17 @@ inline const Vector2<T> Vector2<T>::normalized() const
 }
 
 /**
+ * Normalize the vector
+ * @return this vector normalized
+ */
+template<typename T>
+inline Vector2<T>& Vector2<T>::normalize()
+{
+    (*this) = normalized();
+    return *this;
+}
+
+/**
  * Dot product calculation
  * @param v second vector in the product
  * @return dot product of the vectors
@@ -471,6 +495,17 @@ template<typename T>
 const Vector2<T> Vector2<T>::mirror(const Vector2<T>& axis) const
 {
 	return add(project(axis).sub(*this).mul(2));
+}
+
+/**
+ * Convert to 2D Vector2
+ * @return 2d vector from this 2d vector with type U
+ */
+template<typename T>
+template<typename U>
+const Vector2<U> Vector2<T>::toVector2()
+{
+    return Vector2<U>(x, y);
 }
 
 /***********************************
@@ -627,6 +662,54 @@ template<typename T>
 inline const T operator *(const Vector2<T>& v, const Vector2<T>& w)
 {
 	return v.dot(w);
+}
+
+/**
+ * < operator with vectors
+ * @param v left vector
+ * @param w right Vector
+ * @return true iff all coordinates of v < the corresponding coordinate of w
+ */
+template<typename T>
+inline bool operator <(const Vector2<T>& v, const Vector2<T>& w)
+{
+    return v.x < w.x && v.y < w.y;
+}
+
+/**
+ * > operator with vectors
+ * @param v left vector
+ * @param w right Vector
+ * @return true iff all coordinates of v > the corresponding coordinate of w
+ */
+template<typename T>
+inline bool operator >(const Vector2<T>& v, const Vector2<T>& w)
+{
+    return v.x > w.x && v.y > w.y;
+}
+
+/**
+ * <= operator with vectors
+ * @param v left vector
+ * @param w right Vector
+ * @return true iff all coordinates of v <= the corresponding coordinate of w
+ */
+template<typename T>
+inline bool operator <=(const Vector2<T>& v, const Vector2<T>& w)
+{
+    return v.x <= w.x && v.y <= w.y;
+}
+
+/**
+ * >= operator with vectors
+ * @param v left vector
+ * @param w right Vector
+ * @return true iff all coordinates of v >= the corresponding coordinate of w
+ */
+template<typename T>
+inline bool operator >=(const Vector2<T>& v, const Vector2<T>& w)
+{
+    return v.x >= w.x && v.y >= w.y;
 }
 
 } /* namespace math */

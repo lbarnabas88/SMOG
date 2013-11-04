@@ -9,6 +9,8 @@
 #include "CloudData.hpp"
 // Pcl
 #include <pcl/visualization/pcl_visualizer.h>
+// Map
+#include <QMapWidget.hpp>
 
 /**
  * @brief The CloudEntry class
@@ -25,7 +27,7 @@ public:
     void load(const QString& filepath = QString::null);
     void save(const QString& filepath = QString::null);
     // Visualize
-    virtual void visualize(pcl::visualization::PCLVisualizer* visualizer);
+    virtual void visualize(pcl::visualization::PCLVisualizer* visualizer, QMapWidget* mapWidget);
     // Getters/Setters
     inline const QString& getName() const { return mName; }
     inline void setName(const QString& name) { mName = name; }

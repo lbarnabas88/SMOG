@@ -19,35 +19,26 @@ AdaptiveCloudEntry::AdaptiveCloudEntry() : mNeedToUpdate(false)
 {
 }
 
-void AdaptiveCloudEntry::visualize(pcl::visualization::PCLVisualizer *visualizer)
+void AdaptiveCloudEntry::visualize(pcl::visualization::PCLVisualizer *visualizer, QMapWidget *mapWidget)
 {
-    mNeedToUpdate = true;
-
-    if(isVisible())
-    {
-        // Add new cloud
-        LasCloudData::CloudT::Ptr emptyCloud(new LasCloudData::CloudT());
-        visualizer->addPointCloud<LasCloudData::PointT>(emptyCloud, getName().toStdString());
-        // Update visualizer
-        updateVisualization(visualizer);
-    }
-    else
+    if(!isVisible())
     {
         LasCloudData::CloudT::Ptr emptyCloud(new LasCloudData::CloudT());
         visualizer->updatePointCloud<LasCloudData::PointT>(emptyCloud,getName().toStdString());
         // Remove cloud
         visualizer->removePointCloud(getName().toStdString());
+        // Remove from map
+        mapWidget->delCloud(getName());
     }
-
-    // Call update
-    updateVisualization(visualizer);
+    else
+    {
+        // Call update
+        updateVisualization(visualizer, mapWidget);
+    }
 }
 
-void AdaptiveCloudEntry::updateVisualization(pcl::visualization::PCLVisualizer *visualizer)
+void AdaptiveCloudEntry::updateVisualization(pcl::visualization::PCLVisualizer *visualizer, QMapWidget* mapWidget)
 {
-    // If no need to update, return
-    //if(!mNeedToUpdate)
-    //    return;
     // Cameras vector
     std::vector<pcl::visualization::Camera> cameras;
     // Get cameras
@@ -115,7 +106,10 @@ void AdaptiveCloudEntry::updateVisualization(pcl::visualization::PCLVisualizer *
     }
     mLastSegment = segment;
     // Update visualizer
-    visualizer->updatePointCloud<LasCloudData::PointT>(slice,getName().toStdString());
+    if(!visualizer->updatePointCloud<LasCloudData::PointT>(slice,getName().toStdString()))
+        visualizer->addPointCloud<LasCloudData::PointT>(slice,getName().toStdString());
+    // Add to map
+    mapWidget->fillWithPclPointCloud<LasCloudData::PointT>(*slice, getName());
 }
 
 void AdaptiveCloudEntry::thinCloudBy(CloudData::Ptr cloudData, float level)

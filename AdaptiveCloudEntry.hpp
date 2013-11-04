@@ -22,9 +22,9 @@ public:
     // Contructor
     AdaptiveCloudEntry();
     // Visualize
-    void visualize(pcl::visualization::PCLVisualizer* visualizer);
+    void visualize(pcl::visualization::PCLVisualizer* visualizer, QMapWidget* mapWidget);
     // Update cloud on visualizer
-    void updateVisualization(pcl::visualization::PCLVisualizer* visualizer);
+    void updateVisualization(pcl::visualization::PCLVisualizer* visualizer, QMapWidget* mapWidget);
     // Size of a segment
     static size_t SegmentSize;
     // Thin cloud by level

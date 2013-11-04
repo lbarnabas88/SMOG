@@ -23,7 +23,7 @@ void CloudEntry::save(const QString &filepath)
     saveImpl();
 }
 
-void CloudEntry::visualize(pcl::visualization::PCLVisualizer *visualizer)
+void CloudEntry::visualize(pcl::visualization::PCLVisualizer *visualizer, QMapWidget *mapWidget)
 {
     // Check the visualizer
     if(!visualizer)
@@ -45,11 +45,15 @@ void CloudEntry::visualize(pcl::visualization::PCLVisualizer *visualizer)
         {
             visualizer->addPointCloud<LasCloudData::PointT>(las_data->getCloud(), getName().toStdString());
         }
+
+        // TODO add to map
     }
     // If it's not visible
     else
     {
         visualizer->removePointCloud(getName().toStdString());
+
+        // TODO remove map
     }
 }
 

@@ -141,6 +141,12 @@ public:
     inline const Vector3 normalized() const;
 
     /**
+     * Normalize the vector
+     * @return this vector normalized
+     */
+    inline Vector3& normalize();
+
+    /**
      * Dot product calculation
      * @param v second vector in the product
      * @return dot product of the vectors
@@ -196,6 +202,13 @@ public:
      */
     template<typename U>
     const Vector2<U> toVector2();
+
+    /**
+     * Convert to 3D Vector3
+     * @return 3d vector from this 3d vector with type U
+     */
+    template<typename U>
+    const Vector3<U> toVector3();
 
     /**
      * Constant unit vectors
@@ -423,6 +436,17 @@ inline const Vector3<T> Vector3<T>::normalized() const
 }
 
 /**
+ * Normalize the vector
+ * @return this vector normalized
+ */
+template<typename T>
+inline Vector3<T>& Vector3<T>::normalize()
+{
+    (*this) = normalized();
+    return *this;
+}
+
+/**
  * Dot product calculation
  * @param v second vector in the product
  * @return dot product of the vectors
@@ -509,6 +533,17 @@ template<typename U>
 const Vector2<U> Vector3<T>::toVector2()
 {
     return Vector2<U>(x, y);
+}
+
+/**
+ * Convert to 3D Vector3
+ * @return 3d vector from this 3d vector with type U
+ */
+template<typename T>
+template<typename U>
+const Vector3<U> Vector3<T>::toVector3()
+{
+    return Vector3<U>(x, y, z);
 }
 
 /***********************************
@@ -671,6 +706,54 @@ template<typename T>
 inline const T operator *(const Vector3<T>& v, const Vector3<T>& w)
 {
     return v.dot(w);
+}
+
+/**
+ * < operator with vectors
+ * @param v left vector
+ * @param w right Vector
+ * @return true iff all coordinates of v < the corresponding coordinate of w
+ */
+template<typename T>
+inline bool operator <(const Vector3<T>& v, const Vector3<T>& w)
+{
+    return v.x < w.x && v.y < w.y && v.z < w.z;
+}
+
+/**
+ * > operator with vectors
+ * @param v left vector
+ * @param w right Vector
+ * @return true iff all coordinates of v > the corresponding coordinate of w
+ */
+template<typename T>
+inline bool operator >(const Vector3<T>& v, const Vector3<T>& w)
+{
+    return v.x > w.x && v.y > w.y && v.z > w.z;
+}
+
+/**
+ * <= operator with vectors
+ * @param v left vector
+ * @param w right Vector
+ * @return true iff all coordinates of v <= the corresponding coordinate of w
+ */
+template<typename T>
+inline bool operator <=(const Vector3<T>& v, const Vector3<T>& w)
+{
+    return v.x <= w.x && v.y <= w.y && v.z <= w.z;
+}
+
+/**
+ * >= operator with vectors
+ * @param v left vector
+ * @param w right Vector
+ * @return true iff all coordinates of v >= the corresponding coordinate of w
+ */
+template<typename T>
+inline bool operator >=(const Vector3<T>& v, const Vector3<T>& w)
+{
+    return v.x >= w.x && v.y >= w.y && v.z >= w.z;
 }
 
 } /* namespace math */

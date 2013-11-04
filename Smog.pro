@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql
+QT       += core gui sql opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -26,12 +26,13 @@ LIBS += -lQVTK \
     -lpcl_io \
     -lpcl_features \
     -lpcl_octree \
-    -llas
+    -llas \
+    -lGLU
 
-QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -std=c++11 -Wno-deprecated -Wno-sign-compare
 
 include(main.pri)
-include(qtpcl.pri)
+include(qtext.pri)
 include(backend.pri)
 include(tools.pri)
 include(math.pri)

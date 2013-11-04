@@ -55,6 +55,17 @@ SmogMainWindow::SmogMainWindow(QWidget *parent) :
     CacheDatabase::getInstance().prepareDB();
     // Start maximized
     showMaximized();
+
+    /*
+    // Test cloud for Bigyo
+    typedef QMapWidget::PointCloud::PointT PointT;
+    auto cloud = ui->Map->getCloud("Teszt");
+    for(float x = 100; x < 200; x += 20)
+        for(float y = 100; y < 200; y += 20)
+            for(float z = 0; z < 200; z += 20)
+                cloud->points.push_back(PointT(x+z,y+2*z,z));
+    ui->Map->cameraToClouds();
+    //*/
 }
 
 /**
@@ -62,7 +73,6 @@ SmogMainWindow::SmogMainWindow(QWidget *parent) :
  */
 SmogMainWindow::~SmogMainWindow()
 {
-    CacheDatabase::getInstance().closeDB();
     // Delete user interface.
     delete ui;
 }
@@ -144,7 +154,7 @@ void SmogMainWindow::cloudModelChanged(const QModelIndex &from, const QModelInde
 void SmogMainWindow::updateOnVisibility(CloudEntry::Ptr cloudEntry)
 {
     // Call visualize
-    cloudEntry->visualize(&ui->CloudVisualizer->visualizer());
+    cloudEntry->visualize(&ui->CloudVisualizer->visualizer(), ui->Map);
     // Update visualizer
     ui->CloudVisualizer->update();
 }
@@ -182,7 +192,7 @@ void SmogMainWindow::onVisualizerMouse(const pcl::visualization::MouseEvent &, v
             AdaptiveCloudEntry* cloudEntry = dynamic_cast<AdaptiveCloudEntry*>(CloudStore::getInstance().getCloud(i).get());
             if(cloudEntry)
             {
-                cloudEntry->updateVisualization(&ui->CloudVisualizer->visualizer());
+                cloudEntry->updateVisualization(&ui->CloudVisualizer->visualizer(), ui->Map);
             }
         }
     }
