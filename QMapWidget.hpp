@@ -1,7 +1,9 @@
 #ifndef QMAPWIDGET_HPP
 #define QMAPWIDGET_HPP
 
+// Qt
 #include <QtOpenGL/QGLWidget>
+#include <QVector>
 // Std
 #include <vector>
 #include <memory>
@@ -66,6 +68,10 @@ protected:
     math::Vector3f mCameraPos;
     math::Vector3f mMin, mMax;
     void applyCamera();
+    /// Conversion
+    math::Vector2f convertPointToReal(const QVector2D& point);
+    QVector2D convertRealToPoint(const math::Vector2f& real);
+    /// Knife polygon
 };
 
 template<typename PointT>

@@ -3,9 +3,11 @@
 #include <QtGui/QMouseEvent>
 
 #include <GL/glu.h>
+#include <QVector2D>
 
 #include "log.hpp"
 #include "Vector2.hpp"
+#include "Color.hpp"
 
 QMapWidget::QMapWidget(QWidget *parent) :
     QGLWidget(parent), mCameraScale(1.0f) ,mCameraPos(0,0,0)
@@ -91,9 +93,8 @@ void QMapWidget::paintGL()
         for(PointCloud::PointT& point : cloud->points)
         {
             float factor = point.z / (mMax.z - mMin.z);
-            math::Vector3f color = hsv2rgb(factor * 300.0f,1,1);
-            glColor3f(color.x, color.y, color.z);
-            glVertex3f(point.x, point.y, point.z);
+            glColor3fv(graphics::Colorf::fromHSV(factor * 300.0f,1,1).array());
+            glVertex3fv(point.array());
         }
     }
     glEnd();
@@ -107,6 +108,19 @@ void QMapWidget::mousePressEvent(QMouseEvent *event)
 
     if(event->button() == Qt::RightButton)
         cameraToClouds();
+
+    if(event->button() == Qt::LeftButton)
+    {
+        QVector2D click(event->x(), event->y());
+        DBOUT("[Map] CLICK (" << click.x() << ';' << click.y() << ')');
+        math::Vector2f converted = convertPointToReal(click);
+        DBOUT("[Map] Converted: " << converted);
+        getCloud("TESZT")->points.push_back(converted);
+        QVector2D backconverted = convertRealToPoint(converted);
+        DBOUT("[Map] Back converted: (" << backconverted.x() << ';' << backconverted.y() << ')');
+
+        updateGL();
+    }
 
     DBOUT("[Map] Mouse pressed: Button=" << event->button());
 }
@@ -138,12 +152,13 @@ void QMapWidget::wheelEvent(QWheelEvent *event)
 
     // Create unified delta
     float delta = event->delta() / 120.f;
-    // Scaling with save
+
     float prevScale = mCameraScale;
     mCameraScale += mCameraScale * (delta / ZOOM_RATE);
-    // Modify offset
-    math::Vector2f deltapos(event->x(), height() - event->y());
-    // Deltapos
+    math::Vector2f zoomCenter = convertPointToReal(QVector2D(event->x(), event->y()));
+    float ratio = mCameraScale / prevScale - 1.0f;
+    for(size_t i = 0; i < 2; ++i)
+        mCameraPos[i] -= ratio * (mCameraPos[i] - zoomCenter[i]);
 
     updateGL();
 }
@@ -161,6 +176,19 @@ void QMapWidget::applyCamera()
     glLoadIdentity();
     glScalef(mCameraScale, mCameraScale, mCameraScale);
     glTranslatef(-mCameraPos.x, -mCameraPos.y, -mCameraPos.z);
+}
+
+math::Vector2f QMapWidget::convertPointToReal(const QVector2D &point)
+{
+    return math::Vector2f(point.x(), height()-point.y()) / mCameraScale + mCameraPos.toVector2<float>();
+}
+
+QVector2D QMapWidget::convertRealToPoint(const math::Vector2f &real)
+{
+    math::Vector2f converted = real;
+    converted -= mCameraPos.toVector2<float>();
+    converted *= mCameraScale;
+    return QVector2D(converted.x,height() - converted.y);
 }
 
 void QMapWidget::cameraToClouds()

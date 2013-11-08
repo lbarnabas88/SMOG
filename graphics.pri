@@ -1,0 +1,2 @@
+HEADERS += \
+    Color.hpp
