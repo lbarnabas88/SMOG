@@ -10,8 +10,9 @@
 #include "Color.hpp"
 
 QMapWidget::QMapWidget(QWidget *parent) :
-    QGLWidget(parent), mCameraScale(1.0f) ,mCameraPos(0,0,0)
+    QGLWidget(parent), mCameraScale(1.0f) ,mCameraPos(0,0,0), mGrabbedKnifePoint(NULL)
 {
+    setFocusPolicy(Qt::StrongFocus);
 }
 
 QMapWidget::PointCloud::Ptr QMapWidget::getCloud(const QString &name)
@@ -56,36 +57,17 @@ void QMapWidget::resizeGL(int w, int h)
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, w, 0, h, 0, 1000000); // set origin to bottom left corner
+    glOrtho(0, w, 0, h, -1, 1000000); // set origin to bottom left corner
     //gluPerspective(45, (float)w / (float)h, 1, 10000);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
 
-math::Vector3f hsv2rgb(float h, float s, float v)
-{
-    float C = v * s;
-    float X = C * (1 - fabs( (int)(h / 60) % 2 - 1) );
-    float m = v - C;
-    math::Vector3f rgb;
-    if(h >= 0 && h < 60)
-        rgb.set(C,X,0);
-    if(h >= 60 && h < 120)
-        rgb.set(X,C,0);
-    if(h >= 120 && h < 180)
-        rgb.set(0,C,X);
-    if(h >= 180 && h < 240)
-        rgb.set(0,X,C);
-    if(h >= 240 && h < 300)
-        rgb.set(X,0,C);
-    if(h >= 300 && h < 360)
-        rgb.set(C,0,X);
-    return rgb + math::Vector3f(m,m,m);
-}
-
 void QMapWidget::paintGL()
 {
+    /// Apply camera
     applyCamera();
+    /// Draw clouds
     glBegin(GL_POINTS);
     for(PointCloud::Ptr& cloud : mClouds)
     {
@@ -98,26 +80,58 @@ void QMapWidget::paintGL()
         }
     }
     glEnd();
+    /// Draw knife polygon
+    glBegin(mKnifePolygon.size() < 2 ? GL_POINTS : GL_LINE_STRIP);
+    {
+        glColor3fv(graphics::Colorf::Red.array());
+        for(auto& kp : mKnifePolygon)
+            glVertex2fv(kp.array());
+        if(!mKnifePolygon.empty())
+            glVertex2fv(mKnifePolygon.front().array());
+    }
+    glEnd();
+
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glPointSize(5);
+    glBegin(GL_POINTS);
+    {
+        glColor3fv(graphics::Colorf::Red.array());
+        for(auto& kp : mKnifePolygon)
+            glVertex2fv(kp.array());
+    }
+    glEnd();
+    glPopAttrib();
 }
 
 void QMapWidget::mousePressEvent(QMouseEvent *event)
 {
-    // Create differencer, if not exists
+    // Create differencer
     if(event->button() == Qt::MiddleButton)
         mMouseDiff.reset(new Differencer<QPoint>(QPoint(event->x(), event->y())));
 
     if(event->button() == Qt::RightButton)
-        cameraToClouds();
+    {
+        mKnifePolygon.clear();
+
+        updateGL();
+    }
 
     if(event->button() == Qt::LeftButton)
     {
-        QVector2D click(event->x(), event->y());
-        DBOUT("[Map] CLICK (" << click.x() << ';' << click.y() << ')');
-        math::Vector2f converted = convertPointToReal(click);
-        DBOUT("[Map] Converted: " << converted);
-        getCloud("TESZT")->points.push_back(converted);
-        QVector2D backconverted = convertRealToPoint(converted);
-        DBOUT("[Map] Back converted: (" << backconverted.x() << ';' << backconverted.y() << ')');
+        // If grab point
+        for(auto& kp : mKnifePolygon)
+        {
+            if( (convertRealToPoint(kp) - event->posF()).manhattanLength() < 5 )
+            {
+                mGrabbedKnifePoint = &kp;
+                break;
+            }
+        }
+        // If there is no grabbed point, create new
+        if(!mGrabbedKnifePoint)
+            mKnifePolygon.push_back(convertPointToReal(event->posF()));
+        else
+            mKnifePointDiff.reset(new Differencer<math::Vector2f>(convertPointToReal(event->posF())));
 
         updateGL();
     }
@@ -128,6 +142,9 @@ void QMapWidget::mousePressEvent(QMouseEvent *event)
 void QMapWidget::mouseReleaseEvent(QMouseEvent *event)
 {
     DBOUT("[Map] Mouse released: Button=" << event->button());
+    // Ungrab point on left release
+    if(event->button() == Qt::LeftButton)
+        mGrabbedKnifePoint = NULL;
 }
 
 void QMapWidget::mouseMoveEvent(QMouseEvent *event)
@@ -140,6 +157,14 @@ void QMapWidget::mouseMoveEvent(QMouseEvent *event)
         DBOUT("[Map] Right button is pressed");
         QPoint diff = mMouseDiff->calcDiff(event->pos());
         mCameraPos += math::Vector3f(-diff.x(), diff.y(), 0) / mCameraScale;
+        updateGL();
+    }
+
+    // On grabbed point
+    if(mGrabbedKnifePoint)
+    {
+        math::Vector2f diff = mKnifePointDiff->calcDiff(convertPointToReal(event->posF()));
+        (*mGrabbedKnifePoint) += diff;
         updateGL();
     }
 }
@@ -155,7 +180,7 @@ void QMapWidget::wheelEvent(QWheelEvent *event)
 
     float prevScale = mCameraScale;
     mCameraScale += mCameraScale * (delta / ZOOM_RATE);
-    math::Vector2f zoomCenter = convertPointToReal(QVector2D(event->x(), event->y()));
+    math::Vector2f zoomCenter = convertPointToReal(event->pos());
     float ratio = mCameraScale / prevScale - 1.0f;
     for(size_t i = 0; i < 2; ++i)
         mCameraPos[i] -= ratio * (mCameraPos[i] - zoomCenter[i]);
@@ -165,8 +190,23 @@ void QMapWidget::wheelEvent(QWheelEvent *event)
 
 void QMapWidget::leaveEvent(QEvent *event)
 {
+    QGLWidget::leaveEvent(event);
     Q_UNUSED(event);
     DBOUT("[Map] Leave event");
+}
+
+void QMapWidget::keyPressEvent(QKeyEvent *event)
+{
+    DBOUT("[Map] Pressed key: " << event->key());
+
+    if(event->key() == Qt::Key_R)
+    {
+        cameraToClouds();
+    }
+    else
+    {
+        QGLWidget::keyPressEvent(event);
+    }
 }
 
 void QMapWidget::applyCamera()
@@ -178,17 +218,17 @@ void QMapWidget::applyCamera()
     glTranslatef(-mCameraPos.x, -mCameraPos.y, -mCameraPos.z);
 }
 
-math::Vector2f QMapWidget::convertPointToReal(const QVector2D &point)
+math::Vector2f QMapWidget::convertPointToReal(const QPointF &point)
 {
     return math::Vector2f(point.x(), height()-point.y()) / mCameraScale + mCameraPos.toVector2<float>();
 }
 
-QVector2D QMapWidget::convertRealToPoint(const math::Vector2f &real)
+QPointF QMapWidget::convertRealToPoint(const math::Vector2f &real)
 {
     math::Vector2f converted = real;
     converted -= mCameraPos.toVector2<float>();
     converted *= mCameraScale;
-    return QVector2D(converted.x,height() - converted.y);
+    return QPointF(converted.x,height() - converted.y);
 }
 
 void QMapWidget::cameraToClouds()

@@ -88,24 +88,8 @@ void SmogMainWindow::on_actionLoad_Cloud_triggered()
     QString filetype;
     // Get file path to load
     QString filename = QFileDialog::getOpenFileName(this, "Load file", settings.value("main/lastdir", "").toString(), "Point cloud(*.pcd *.las);;All files(*)", &filetype);
-    // If valid
-    if(!filename.isNull())
-    {
-        // Logger
-        QTextStream out(stdout);
-        // Create file info object
-        QFileInfo fileinfo(filename);
-        // Log selected file
-        out << "[Main] Load file: dir: " << fileinfo.dir().absolutePath() << ", name: " << fileinfo.fileName() << ", extension: " << fileinfo.suffix() << '\n';
-        // Cloud store
-        auto& cloudStore = CloudStore::getInstance();
-        // Add cloud
-        mCloudModel->addCloud(fileinfo.baseName(), fileinfo.absoluteFilePath(), ui->actionUse_adaptive_clouds->isChecked());
-        // Update viz
-        updateOnVisibility(cloudStore.getCloud(cloudStore.getNumberOfClouds() - 1));
-        // Set last used directory
-        settings.setValue("main/lastdir", fileinfo.dir().absolutePath());
-    }
+    // Load
+    loadCloudFromFile(filename);
 }
 
 void SmogMainWindow::on_actionIncrease_point_size_triggered()
@@ -202,6 +186,30 @@ void SmogMainWindow::onVisualizerKeyboard(const pcl::visualization::KeyboardEven
 {
 }
 
+void SmogMainWindow::loadCloudFromFile(const QString &filepath)
+{
+    // If valid
+    if(!filepath.isNull())
+    {
+        // Settings object
+        QSettings settings;
+        // Logger
+        QTextStream out(stdout);
+        // Create file info object
+        QFileInfo fileinfo(filepath);
+        // Log selected file
+        out << "[Main] Load file: dir: " << fileinfo.dir().absolutePath() << ", name: " << fileinfo.fileName() << ", extension: " << fileinfo.suffix() << '\n';
+        // Cloud store
+        auto& cloudStore = CloudStore::getInstance();
+        // Add cloud
+        mCloudModel->addCloud(fileinfo.baseName(), fileinfo.absoluteFilePath(), ui->actionUse_adaptive_clouds->isChecked());
+        // Update viz
+        updateOnVisibility(cloudStore.getCloud(cloudStore.getNumberOfClouds() - 1));
+        // Set last used directory
+        settings.setValue("main/lastdir", fileinfo.dir().absolutePath());
+    }
+}
+
 void SmogMainWindow::on_actionClose_Cloud_triggered()
 {
     // Deleted items
@@ -218,5 +226,26 @@ void SmogMainWindow::on_actionClose_Cloud_triggered()
         mCloudModel->removeCloud(index.row() - deleted);
         // Inc deleted
         ++deleted;
+    }
+}
+
+void SmogMainWindow::on_actionCut_out_Subcloud_triggered()
+{
+    // Settings object
+    QSettings settings;
+    // Open save dialog
+    QString filepath = QFileDialog::getSaveFileName(this,"Save filtered file", settings.value("main/lastdir", "").toString(), "*.las");
+    // If not null
+    if(!filepath.isNull())
+    {
+        // Get polygon
+        const math::Polygonf& polygon = ui->Map->getKnifePolygon();
+        // If polygon is't big enought or not simple, do nothing
+        if(polygon.size() < 3 || !math::isPolygonSimple(polygon))
+            return;
+        // Filter
+        CloudStore::getInstance().filterVisibleCloudsTo(ui->Map->getKnifePolygon(),filepath);
+        // Load
+        loadCloudFromFile(filepath);
     }
 }

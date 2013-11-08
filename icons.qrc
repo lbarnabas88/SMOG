@@ -10,5 +10,6 @@
         <file alias="close_cloud">Primo Icons/PNG/48x48/folder_delete.png</file>
         <file alias="exit">Primo Icons/PNG/48x48/power_black.png</file>
         <file alias="lock_view">Primo Icons/PNG/48x48/lock.png</file>
+        <file alias="cut_subcloud">Primo Icons/PNG/48x48/design.png</file>
     </qresource>
 </RCC>

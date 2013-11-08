@@ -9,6 +9,7 @@
 #include <memory>
 // Math
 #include "Vector3.hpp"
+#include "Polygon.hpp"
 // Tools
 #include "Differencer.hpp"
 // Pcl
@@ -44,6 +45,8 @@ public:
     void fillWithPclPointCloud(const pcl::PointCloud<PointT>& cloud, const QString &name);
     /// Camera
     void cameraToClouds();
+    /// Cutting polygon
+    inline const math::Polygonf& getKnifePolygon() const { return mKnifePolygon; }
 signals:
     
 public slots:
@@ -59,6 +62,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void wheelEvent(QWheelEvent *event);
     void leaveEvent(QEvent *event);
+    void keyPressEvent(QKeyEvent *event);
     // Input helpers
     std::shared_ptr<Differencer<QPoint> > mMouseDiff;
     /// Point clouds
@@ -69,9 +73,12 @@ protected:
     math::Vector3f mMin, mMax;
     void applyCamera();
     /// Conversion
-    math::Vector2f convertPointToReal(const QVector2D& point);
-    QVector2D convertRealToPoint(const math::Vector2f& real);
+    math::Vector2f convertPointToReal(const QPointF& point);
+    QPointF convertRealToPoint(const math::Vector2f& real);
     /// Knife polygon
+    math::Polygonf mKnifePolygon;
+    math::Vector2f* mGrabbedKnifePoint;
+    std::shared_ptr<Differencer<math::Vector2f> > mKnifePointDiff;
 };
 
 template<typename PointT>

@@ -1,6 +1,7 @@
 #include "CloudStore.hpp"
 // Std
 #include <exception>
+#include <iostream>
 // Qt
 #include <QTextStream>
 #include <QSettings>
@@ -12,6 +13,11 @@
 #include <pcl/io/pcd_io.h>
 // Backend
 #include <AdaptiveCloudEntry.hpp>
+// Liblas
+#include <liblas/reader.hpp>
+#include <liblas/writer.hpp>
+// Math
+#include "Polygon.hpp"
 
 CloudStore &CloudStore::getInstance()
 {
@@ -69,4 +75,43 @@ void CloudStore::removeCloud(const size_t &index)
         return;
     // Remove from clouds
     mClouds.erase(mClouds.begin() + index);
+}
+
+void CloudStore::filterVisibleCloudsTo(const math::Polygonf& polygon, const QString &filepath)
+{
+    try
+    {
+        // Las output
+        std::ofstream ofs(filepath.toStdString().c_str(), ios::out | ios::binary);
+        std::shared_ptr<liblas::Writer> writerprt;
+
+        for(CloudEntry::Ptr& cloud : mClouds)
+        {
+            // Only if visible
+            if(!cloud->isVisible())
+                continue;
+            // Only if .las
+            QFileInfo fileinfo(cloud->getFilePath());
+            if(fileinfo.suffix() != "las")
+                continue;
+            // Las input from cloud->getFilePath()
+            std::ifstream ifs(cloud->getFilePath().toStdString().c_str(), ios::in | ios::binary);
+            liblas::Reader reader(ifs);
+            // Create writer
+            if(!writerprt)
+                writerprt.reset(new liblas::Writer(ofs, reader.GetHeader()));
+            // Copy
+            while(reader.ReadNextPoint())
+            {
+                const liblas::Point& point = reader.GetPoint();
+                math::Vector2f filterPoint(point.GetX(), point.GetY());
+                if(math::isPointInsidePolygon(polygon,filterPoint))
+                    writerprt->WritePoint(point);
+            }
+        }
+    }
+    catch (std::exception const& e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 }

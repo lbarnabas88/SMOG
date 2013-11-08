@@ -27,6 +27,8 @@ public:
     // Remove cloud
     void removeCloud(const QString& name);
     void removeCloud(const size_t& index);
+    // Filter visible clouds files
+    void filterVisibleCloudsTo(const math::Polygonf &polygon, const QString& filepath);
 private:
     // Singleton
     CloudStore() {}

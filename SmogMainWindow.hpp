@@ -50,6 +50,8 @@ private slots:
 
     void on_actionClose_Cloud_triggered();
 
+    void on_actionCut_out_Subcloud_triggered();
+
 private:
     // User interface object
     Ui::SmogMainWindow *ui;
@@ -71,6 +73,9 @@ private:
 
     // Visualizer keyboard callback
     void onVisualizerKeyboard(const pcl::visualization::KeyboardEvent& ke, void* userData);
+
+    // Load cloud from file
+    void loadCloudFromFile(const QString& filepath);
 };
 
 #endif // SMOGMAINWINDOW_HPP
