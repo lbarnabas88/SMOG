@@ -29,7 +29,7 @@ LIBS += -lQVTK \
     -llas \
     -lGLU
 
-QMAKE_CXXFLAGS += -std=c++11 -Wno-deprecated -Wno-sign-compare
+QMAKE_CXXFLAGS += -std=c++11 -Wno-deprecated -Wextra -Wno-sign-compare
 
 include(main.pri)
 include(qtext.pri)

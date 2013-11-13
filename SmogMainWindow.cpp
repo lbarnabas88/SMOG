@@ -55,6 +55,10 @@ SmogMainWindow::SmogMainWindow(QWidget *parent) :
     CacheDatabase::getInstance().prepareDB();
     // Start maximized
     showMaximized();
+    // Create tmp folder
+    QDir dir("tmp");
+    if(!dir.exists())
+        dir.mkpath(".");
 
     /*
     // Test cloud for Bigyo

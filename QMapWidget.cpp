@@ -71,7 +71,7 @@ void QMapWidget::paintGL()
     glBegin(GL_POINTS);
     for(PointCloud::Ptr& cloud : mClouds)
     {
-        DBOUT("[Map] Draw cloud: " << cloud->name.toStdString() << ", number of points: " << cloud->points.size());
+        //DBOUT("[Map] Draw cloud: " << cloud->name.toStdString() << ", number of points: " << cloud->points.size());
         for(PointCloud::PointT& point : cloud->points)
         {
             float factor = point.z / (mMax.z - mMin.z);
@@ -136,12 +136,12 @@ void QMapWidget::mousePressEvent(QMouseEvent *event)
         updateGL();
     }
 
-    DBOUT("[Map] Mouse pressed: Button=" << event->button());
+    //DBOUT("[Map] Mouse pressed: Button=" << event->button());
 }
 
 void QMapWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-    DBOUT("[Map] Mouse released: Button=" << event->button());
+    //DBOUT("[Map] Mouse released: Button=" << event->button());
     // Ungrab point on left release
     if(event->button() == Qt::LeftButton)
         mGrabbedKnifePoint = NULL;
@@ -149,12 +149,12 @@ void QMapWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void QMapWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    DBOUT("[Map] Mouse Moved: Pos=" << math::Vector2f(event->x(), event->y()));
+    //DBOUT("[Map] Mouse Moved: Pos=" << math::Vector2f(event->x(), event->y()));
 
     // If right button pressed
     if(event->buttons() & Qt::MiddleButton)
     {
-        DBOUT("[Map] Right button is pressed");
+        //DBOUT("[Map] Right button is pressed");
         QPoint diff = mMouseDiff->calcDiff(event->pos());
         mCameraPos += math::Vector3f(-diff.x(), diff.y(), 0) / mCameraScale;
         updateGL();
@@ -173,7 +173,7 @@ const float ZOOM_RATE = 10.f;
 
 void QMapWidget::wheelEvent(QWheelEvent *event)
 {
-    DBOUT("[Map] Wheel: Diff=" << event->delta());
+    //DBOUT("[Map] Wheel: Diff=" << event->delta());
 
     // Create unified delta
     float delta = event->delta() / 120.f;
@@ -192,12 +192,12 @@ void QMapWidget::leaveEvent(QEvent *event)
 {
     QGLWidget::leaveEvent(event);
     Q_UNUSED(event);
-    DBOUT("[Map] Leave event");
+    //DBOUT("[Map] Leave event");
 }
 
 void QMapWidget::keyPressEvent(QKeyEvent *event)
 {
-    DBOUT("[Map] Pressed key: " << event->key());
+    //DBOUT("[Map] Pressed key: " << event->key());
 
     if(event->key() == Qt::Key_R)
     {
@@ -267,6 +267,6 @@ void QMapWidget::cameraToClouds()
 
     mMin = min, mMax = max;
 
-    DBOUT("[Map] min=" << min << ", max=" << max << ", size=" << size << ", scale=" << mCameraScale << ", width=" << width() << ", height=" << height() << ", camera=" << mCameraPos);
+    //DBOUT("[Map] min=" << min << ", max=" << max << ", size=" << size << ", scale=" << mCameraScale << ", width=" << width() << ", height=" << height() << ", camera=" << mCameraPos);
     updateGL();
 }

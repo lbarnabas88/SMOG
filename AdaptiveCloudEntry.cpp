@@ -62,8 +62,14 @@ void AdaptiveCloudEntry::updateVisualization(pcl::visualization::PCLVisualizer *
         if(camWrapper.zoomFactor() < level.zoom)
             levelIndex = i;
     }
+    // Return if no level
+    if(mSubclouds.empty())
+        return;
     // Get level
     SubCloudLevel& level = mSubclouds[levelIndex];
+    // Return if no cloud on level
+    if(level.clouds.empty())
+        return;
     // Closest
     SubCloud& closest = level.clouds.front();
     // Matrix indices
@@ -77,7 +83,7 @@ void AdaptiveCloudEntry::updateVisualization(pcl::visualization::PCLVisualizer *
             if(index != -1)
             {
                 SubCloud& cloud = level.clouds[index];
-                if(cloud.area.isPointIn(lookPoint))
+                if(cloud.area.contains(lookPoint))
                 {
                     closest = cloud;
                     indices.set(i,j);
@@ -162,6 +168,8 @@ void AdaptiveCloudEntry::loadImpl()
 
 void AdaptiveCloudEntry::build(CloudData::Ptr& cloudData)
 {
+    // Log filepath
+    DBOUT("[ACE] File to load: " << getFilePath().toStdString());
     /// USE THIS IF SMALL
     // Convert to lascloud
     auto cloud = ((LasCloudData*)cloudData.get())->getCloud();
@@ -212,35 +220,51 @@ void AdaptiveCloudEntry::build(CloudData::Ptr& cloudData)
     // Middle level
     middlelevel = avgPoint.z;
 
-    /// CALCULATE SIZE
-    // Size
-    math::Vector2f size = minmax.second - minmax.first;
-
     /// CHECK FOR VALID CACHE
     // Check if it's in the cache and exists
     mSegmentBase = CacheDatabase::getInstance().getSegmentPath(getFilePath());
+
+    DBOUT("[ACE] Segment base: " << (mSegmentBase.isNull()?std::string("NULL"):mSegmentBase.toStdString()));
 
     // Need to build
     bool needBuild = true;
     /// IF There is a valid cache entry
     if(!mSegmentBase.isNull())
     {
+        // Log build from cache
+        DBOUT("[ACE] Using cache.");
         // Get map
         QString mapStr = CacheDatabase::getInstance().getMap(getFilePath());
         // Check if all the segments are exists
         QTextStream mapStream(&mapStr,QIODevice::ReadOnly);
         // Coords
-        math::Vector3<size_t> coords;
+        size_t depth, x, y;
         // Read
         while(!mapStream.atEnd())
         {
-            mapStream >> coords.x >> coords.y >> coords.z;
-            DBOUT("[ACE] Loaded map coords: " << coords);
+            // Read coordinates
+            mapStream >> depth >> x >> y;
+            // Break if no more subcloud
+            if(mapStream.atEnd())
+                break;
+            // Log
+            DBOUT("[ACE] Loaded map coords: " << math::Vector3<size_t>(depth, x, y));
+            // Grid N
+            size_t gridN = depth2gridn(depth);
+            // Extend subclouds
+            while(depth >= mSubclouds.size())
+                addLevel(gridN, bounds);
+            // Get level reference
+            SubCloudLevel& level = mSubclouds[depth];
+            // Create subcloud with need subcloud function
+            needSubCloud(level, depth, x, y, minmax.first, minmax.second, false);
         }
     }
     /// ELSE need to build and save cache
     else if(needBuild)
     {
+        // Log build new
+        DBOUT("[ACE] Build from scatch.");
         /// GENERATE NEW SEGMENT BASE
         // Segment path
         mSegmentBase = getName();
@@ -272,7 +296,7 @@ void AdaptiveCloudEntry::build(CloudData::Ptr& cloudData)
             {
                 math::Vector2<size_t> indices = point2indices(point.x, point.y, gridN, minmax.first, minmax.second);
                 // Add point to the corresponding cloud
-                needSubCloud(level, depth, indices.x, indices.y, true).cloud->getCloud()->push_back(point);
+                needSubCloud(level, depth, indices.x, indices.y, minmax.first, minmax.second, true).cloud->getCloud()->push_back(point);
             }
 
             /// PROCESS SUBCLOUDS
@@ -300,21 +324,6 @@ void AdaptiveCloudEntry::build(CloudData::Ptr& cloudData)
                 }
                 // Increase index of current subcloud
                 ++indexOfCurrentSubcloud;
-            }
-            // Calc center points
-            for(size_t i = 0; i < gridN; ++i)
-            {
-                for(size_t j = 0; j < gridN; ++j)
-                {
-                    if(!level.map.isValid(i,j))
-                        continue;
-                    SubCloud& cloud = level.clouds[level.map(i, j)];
-                    math::Vector2f gridSize = size / gridN;
-                    cloud.area.min.set(i * gridSize.x, j * gridSize.y);
-                    cloud.area.min += minmax.first;
-                    cloud.area.max = cloud.area.min + gridSize;
-                    cloud.center = (cloud.area.min + cloud.area.max) / 2.0f;
-                }
             }
         }
         /// CONVERT MAP TO STR
@@ -365,23 +374,33 @@ AdaptiveCloudEntry::SubCloudLevel &AdaptiveCloudEntry::addLevel(size_t gridN, co
     return mSubclouds.back();
 }
 
-AdaptiveCloudEntry::SubCloud &AdaptiveCloudEntry::needSubCloud(AdaptiveCloudEntry::SubCloudLevel &level, size_t depth, size_t x, size_t y, bool createLoaded)
+AdaptiveCloudEntry::SubCloud &AdaptiveCloudEntry::needSubCloud(AdaptiveCloudEntry::SubCloudLevel &level, size_t depth, size_t x, size_t y, const math::Vector2f &min, const math::Vector2f &max, bool createLoaded)
 {
     // Get the subcloud, and add. If it's doesn't exist, create
     if(level.map(x, y) == -1)
     {
         // Create new subcloud
         level.clouds.push_back(SubCloud());
+        // Get reference to back
+        SubCloud& cloud = level.clouds.back();
         // Create cloud data
-        level.clouds.back().cloud.reset(new LasCloudData());
+        cloud.cloud.reset(new LasCloudData());
         // Create cloud on cloud data
-        level.clouds.back().cloud->createCloud();
+        cloud.cloud->createCloud();
         // Höhö
-        level.clouds.back().loaded = createLoaded;
+        cloud.loaded = createLoaded;
         // Set filename
-        level.clouds.back().filename = genSubcloudFilename(depth, x, y);
+        cloud.filename = genSubcloudFilename(depth, x, y);
         // Save pointer to the matrix
         level.map(x, y) = level.clouds.size() - 1;
+        /// Calc area
+        // Grid size
+        math::Vector2f gridSize = (max - min);
+        gridSize.x /= level.map.getWidth();
+        gridSize.y /= level.map.getHeight();
+        // Calc area
+        cloud.area.setMin(min + math::Vector2f(x * gridSize.x, y * gridSize.y));
+        cloud.area.setSize(gridSize);
     }
     // Return the subcloud
     return level.clouds[level.map(x, y)];
@@ -419,6 +438,9 @@ QString AdaptiveCloudEntry::genSubcloudFilename(size_t level, int xi, int yi)
 // Load subcloud
 void AdaptiveCloudEntry::loadSubcloud(size_t level, int xi, int yi)
 {
+    // Return if no level
+    if(mSubclouds.empty() || level >= mSubclouds.size())
+        return;
     // Sub level
     SubCloudLevel& subLevel = mSubclouds[level];
     // If it's not on the map
@@ -438,6 +460,9 @@ void AdaptiveCloudEntry::loadSubcloud(size_t level, int xi, int yi)
 // Unload subcloud
 void AdaptiveCloudEntry::unloadSubcloud(size_t level, int xi, int yi)
 {
+    // Return if no level
+    if(mSubclouds.empty() || level >= mSubclouds.size())
+        return;
     // Sub level
     SubCloudLevel& subLevel = mSubclouds[level];
     // If it's not on the map
@@ -457,6 +482,9 @@ void AdaptiveCloudEntry::unloadSubcloud(size_t level, int xi, int yi)
 // Save subcloud
 void AdaptiveCloudEntry::saveSubcloud(size_t level, int xi, int yi)
 {
+    // Return if no level
+    if(mSubclouds.empty() || level >= mSubclouds.size())
+        return;
     // Sub level
     SubCloudLevel& subLevel = mSubclouds[level];
     // If it's not on the map

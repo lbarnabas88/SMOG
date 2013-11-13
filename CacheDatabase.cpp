@@ -29,7 +29,7 @@ QString CacheDatabase::getField(const QString &what, const QString &where, const
 {
     // If same return
     if(what == where)
-        return QString();
+        return QString::null;
     // Create model
     QSqlTableModel* model = new QSqlTableModel;
     // Set table
@@ -37,15 +37,15 @@ QString CacheDatabase::getField(const QString &what, const QString &where, const
     // Edit stategy
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     // Set filter
-    model->setFilter(QString("%1=%2").arg(where, value));
+    model->setFilter(QString("%1='%2'").arg(where, value));
     // Run selection
     model->select();
     // Get record
-    QSqlRecord record = model->record();
+    QSqlRecord record = model->record(0);
     // If not empty
     if(!record.isEmpty())
         // Get value
-        return record.value(what).toString();
+        return record.value(record.indexOf(what)).toString();
     // Return result
     return QString::null;
 }
@@ -81,7 +81,7 @@ bool CacheDatabase::prepareDB()
     {
         // Sql query object
         QSqlQuery query;
-        ret = query.exec(QString("CREATE %1 (%2 TEXT PRIMARY KEY,%3 TEXT,%4 TEXT)").arg(CacheTableName, CacheColumnCloudPath, CacheColumnSegmentBase, CacheColumnMap));
+        ret = query.exec(QString("CREATE TABLE %1 (%2 TEXT PRIMARY KEY,%3 TEXT,%4 TEXT)").arg(CacheTableName, CacheColumnCloudPath, CacheColumnSegmentBase, CacheColumnMap));
         DBOUT("[CacheDatabase] Create table..." << (ret?"DONE":"FAIL"));
     }
     // Return the result
@@ -118,19 +118,21 @@ bool CacheDatabase::updateCacheEntry(const QString &cloud_path, const QString &s
     // Query
     QSqlQuery query;
     // Exec update
-    return query.exec(QString("UPDATE %1 SET %2='%3'',%4='%5' WHERE %6=%7").arg(CacheTableName, CacheColumnSegmentBase, segment_path, CacheColumnMap, mapStr, CacheColumnCloudPath, cloud_path));
+    bool success = query.exec(QString("UPDATE %1 SET %2='%3',%4='%5' WHERE %6='%7'").arg(CacheTableName, CacheColumnSegmentBase, segment_path, CacheColumnMap, mapStr, CacheColumnCloudPath, cloud_path));
+
+    DBOUT("[CacheDatabase] Update sql: " << QString("UPDATE %1 SET %2='%3',%4='%5' WHERE %6='%7'").arg(CacheTableName, CacheColumnSegmentBase, segment_path, CacheColumnMap, mapStr, CacheColumnCloudPath, cloud_path).toStdString());
+
+    DBOUT("[CacheDatabase] Update..." << (success?"SUCCESS":"FAIL"));
+
+    return success;
 }
 
 void CacheDatabase::saveCacheEntry(const QString &cloud_path, const QString &segment_path, const QString &mapStr)
 {
-    if(!updateCacheEntry(cloud_path, segment_path, mapStr))
+    if(insertCacheEntry(cloud_path, segment_path, mapStr) == -1)
     {
-        DBOUT("[CacheDatabase] Need insert");
-        insertCacheEntry(cloud_path, segment_path, mapStr);
-    }
-    else
-    {
-        DBOUT("[CacheDatabse] Cache updated");
+        DBOUT("[CacheDatabase] Insert fail -> update");
+        updateCacheEntry(cloud_path, segment_path, mapStr);
     }
 }
 

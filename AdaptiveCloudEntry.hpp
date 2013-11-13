@@ -15,6 +15,7 @@
 // Math
 #include "Vector2.hpp"
 #include "Vector3.hpp"
+#include "Box.hpp"
 
 class AdaptiveCloudEntry : public CloudEntry
 {
@@ -36,21 +37,10 @@ private:
     void loadImpl();
     // Slice and thin
     void build(CloudData::Ptr &cloudData);
-    // Area struct
-    struct Area
-    {
-        math::Vector2f min;
-        math::Vector2f max;
-        inline const math::Vector2f& pos() const { return min; }
-        inline const math::Vector2f size() const { return max - min; }
-        inline bool isPointIn(const math::Vector2f& p) { return p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y; }
-    };
-
     // Type of subcloud
     struct SubCloud
     {
-        math::Vector2f center;
-        Area area;
+        math::Areaf area;
         LasCloudData::Ptr cloud;
         QString filename;
         bool loaded;
@@ -131,7 +121,7 @@ private:
     // Add subcloud level, and get reference to it.
     SubCloudLevel& addLevel(size_t gridN, const std::pair<math::Vector3f,math::Vector3f>& bounds);
     // Add subcloud
-    SubCloud& needSubCloud(SubCloudLevel& level, size_t depth, size_t x, size_t y, bool createLoaded = false);
+    SubCloud& needSubCloud(SubCloudLevel& level, size_t depth, size_t x, size_t y, const math::Vector2f &min, const math::Vector2f &max, bool createLoaded = false);
     // Convert x,y to xi, yi
     static math::Vector2<size_t> point2indices(float x, float y, size_t gridN, const math::Vector2f& min, const math::Vector2f &max);
     // GridN from depth

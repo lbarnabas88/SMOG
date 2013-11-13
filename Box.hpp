@@ -90,13 +90,6 @@ public:
     void setCenter(const V& center);
 
     /**
-     * @brief Move the Box by (x,y)
-     * @param x move by x
-     * @param y move by y
-     */
-    void move(V x, V y);
-
-    /**
      * @brief Move the Box by diff
      * @param diff move by
      */
@@ -249,17 +242,6 @@ void Box<V>::setCenter(const V& center)
     V halfSize = size() / 2;
     setMin(center - halfSize);
     setMax(center + halfSize);
-}
-
-/**
- * @brief Move the Box by (x,y)
- * @param x move by x
- * @param y move by y
- */
-template<typename V>
-void Box<V>::move(V x, V y)
-{
-    move(V(x, y));
 }
 
 /**
