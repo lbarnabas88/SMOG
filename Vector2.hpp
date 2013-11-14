@@ -200,7 +200,7 @@ public:
      * @return 2d vector from this 2d vector with type U
      */
     template<typename U>
-    const Vector2<U> toVector2();
+    const Vector2<U> toVector2() const;
 
 	/**
 	 * Constant unit vectors
@@ -503,7 +503,7 @@ const Vector2<T> Vector2<T>::mirror(const Vector2<T>& axis) const
  */
 template<typename T>
 template<typename U>
-const Vector2<U> Vector2<T>::toVector2()
+const Vector2<U> Vector2<T>::toVector2() const
 {
     return Vector2<U>(x, y);
 }

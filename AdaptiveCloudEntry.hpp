@@ -112,6 +112,7 @@ private:
     // Type of subcloud level
     struct SubCloudLevel
     {
+        math::Areaf area;
         double zoom;
         IndexMap map;
         std::vector<SubCloud> clouds;

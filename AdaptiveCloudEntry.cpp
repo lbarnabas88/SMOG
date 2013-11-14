@@ -70,25 +70,24 @@ void AdaptiveCloudEntry::updateVisualization(pcl::visualization::PCLVisualizer *
     // Return if no cloud on level
     if(level.clouds.empty())
         return;
-    // Closest
-    SubCloud& closest = level.clouds.front();
     // Matrix indices
     math::Vector2<size_t> indices(0,0);
 
-    // Search
+    // Convert point to indices
+    math::Vector2f point = (lookPoint - level.area.min());
+    math::Vector2f unitSize = level.area.size();
+    unitSize.x /= level.map.getWidth();
+    unitSize.y /= level.map.getHeight();
+    point.x /= unitSize.x;
+    point.y /= unitSize.y;
+    math::Vector2<int> intIndices(point);
+    // Get the closest valid
     for(size_t i = 0; i < level.map.getWidth(); ++i)
         for(size_t j = 0; j < level.map.getHeight(); ++j)
         {
-            int index = level.map(i,j);
-            if(index != -1)
-            {
-                SubCloud& cloud = level.clouds[index];
-                if(cloud.area.contains(lookPoint))
-                {
-                    closest = cloud;
+            if(level.map.isValid(i,j))
+                if( (math::Vector2<int>(i,j) - intIndices).length2() < (indices.toVector2<int>() - intIndices).length2() )
                     indices.set(i,j);
-                }
-            }
         }
     // Concatenate neighbourhood
     math::Vector3<size_t> segment(levelIndex, indices.x, indices.y);
@@ -370,6 +369,9 @@ AdaptiveCloudEntry::SubCloudLevel &AdaptiveCloudEntry::addLevel(size_t gridN, co
     mSubclouds.back().zoom = (std::max(segmentDimension.x, segmentDimension.y) / 2.0f) / tan(alpha / 2.0f);
     // Reset map
     mSubclouds.back().map.reset(gridN, gridN);
+    // Calc area
+    mSubclouds.back().area.setMin(bounds.first.toVector2<float>());
+    mSubclouds.back().area.setMax(bounds.second.toVector2<float>());
     // Return the new subcloud level
     return mSubclouds.back();
 }

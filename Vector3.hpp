@@ -201,14 +201,14 @@ public:
      * @return 2d vector from this 3d vector
      */
     template<typename U>
-    const Vector2<U> toVector2();
+    const Vector2<U> toVector2() const;
 
     /**
      * Convert to 3D Vector3
      * @return 3d vector from this 3d vector with type U
      */
     template<typename U>
-    const Vector3<U> toVector3();
+    const Vector3<U> toVector3() const;
 
     /**
      * Constant unit vectors
@@ -530,7 +530,7 @@ const Vector3<T> Vector3<T>::mirror(const Vector3<T>& axis) const
  */
 template<typename T>
 template<typename U>
-const Vector2<U> Vector3<T>::toVector2()
+const Vector2<U> Vector3<T>::toVector2() const
 {
     return Vector2<U>(x, y);
 }
@@ -541,7 +541,7 @@ const Vector2<U> Vector3<T>::toVector2()
  */
 template<typename T>
 template<typename U>
-const Vector3<U> Vector3<T>::toVector3()
+const Vector3<U> Vector3<T>::toVector3() const
 {
     return Vector3<U>(x, y, z);
 }
