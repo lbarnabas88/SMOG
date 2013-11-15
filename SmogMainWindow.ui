@@ -99,6 +99,7 @@
     <addaction name="actionBackground_Color"/>
     <addaction name="actionUse_adaptive_clouds"/>
     <addaction name="actionLock_adaptive_view"/>
+    <addaction name="actionUse_cache"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -135,6 +136,7 @@
    <addaction name="actionDecrease_point_size"/>
    <addaction name="separator"/>
    <addaction name="actionLock_adaptive_view"/>
+   <addaction name="actionUse_cache"/>
   </widget>
   <widget class="QToolBar" name="map_toolbar">
    <property name="windowTitle">
@@ -258,6 +260,24 @@
    </property>
    <property name="toolTip">
     <string>Cut out from the visible las clouds to a new cloud</string>
+   </property>
+  </action>
+  <action name="actionUse_cache">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/actions/use_cache</normaloff>:/actions/use_cache</iconset>
+   </property>
+   <property name="text">
+    <string>Use cache</string>
+   </property>
+   <property name="toolTip">
+    <string>Use cache or force build if inactive</string>
    </property>
   </action>
  </widget>

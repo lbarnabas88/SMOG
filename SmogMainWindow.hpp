@@ -52,6 +52,8 @@ private slots:
 
     void on_actionCut_out_Subcloud_triggered();
 
+    void on_actionUse_cache_triggered();
+
 private:
     // User interface object
     Ui::SmogMainWindow *ui;

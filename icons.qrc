@@ -11,5 +11,6 @@
         <file alias="exit">Primo Icons/PNG/48x48/power_black.png</file>
         <file alias="lock_view">Primo Icons/PNG/48x48/lock.png</file>
         <file alias="cut_subcloud">Primo Icons/PNG/48x48/design.png</file>
+        <file alias="use_cache">Primo Icons/PNG/48x48/database_inactive.png</file>
     </qresource>
 </RCC>

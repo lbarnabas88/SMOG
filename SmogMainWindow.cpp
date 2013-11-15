@@ -59,6 +59,8 @@ SmogMainWindow::SmogMainWindow(QWidget *parent) :
     QDir dir("tmp");
     if(!dir.exists())
         dir.mkpath(".");
+    // Default value for use cache
+    AdaptiveCloudEntry::UseCache = ui->actionUse_cache->isChecked();
 
     /*
     // Test cloud for Bigyo
@@ -252,4 +254,10 @@ void SmogMainWindow::on_actionCut_out_Subcloud_triggered()
         // Load
         loadCloudFromFile(filepath);
     }
+}
+
+void SmogMainWindow::on_actionUse_cache_triggered()
+{
+    // Update use cache
+    AdaptiveCloudEntry::UseCache = ui->actionUse_cache->isChecked();
 }

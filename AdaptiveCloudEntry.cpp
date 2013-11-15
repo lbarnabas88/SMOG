@@ -15,6 +15,7 @@
 
 size_t AdaptiveCloudEntry::SegmentSize = 100000;
 size_t AdaptiveCloudEntry::MaxDepth = 10;
+bool AdaptiveCloudEntry::UseCache = true;
 
 AdaptiveCloudEntry::AdaptiveCloudEntry() : mNeedToUpdate(false)
 {
@@ -232,7 +233,7 @@ void AdaptiveCloudEntry::build(CloudData::Ptr& cloudData)
     // Need to build
     bool needBuild = true;
     /// IF There is a valid cache entry
-    if(!mSegmentBase.isNull())
+    if(!mSegmentBase.isNull() && UseCache)
     {
         // Log build from cache
         DBOUT("[ACE] Using cache.");
@@ -272,7 +273,7 @@ void AdaptiveCloudEntry::build(CloudData::Ptr& cloudData)
         // Segment path
         mSegmentBase = getName();
         // While occupied, add number
-        for(int i = 2; !CacheDatabase::getInstance().getCloudPath(mSegmentBase).isNull(); ++i)
+        for(int i = 2; !CacheDatabase::getInstance().getCloudPath(mSegmentBase).isNull() && CacheDatabase::getInstance().getCloudPath(mSegmentBase) != getFilePath(); ++i)
         {
             mSegmentBase = getName() + QString::number(i);
         }
