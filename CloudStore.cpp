@@ -242,9 +242,9 @@ void CloudStore::filterVisibleCloudsTo(const math::Polygonf& polygon, const QStr
                 // Correction if not the same
                 if(!same)
                 {
-                    point.SetX(mergedHeader.GetOffsetX() + mergedHeader.GetScaleX() * (point.GetX()) / header.GetScaleX() - header.GetOffsetX());
-                    point.SetY(mergedHeader.GetOffsetY() + mergedHeader.GetScaleY() * (point.GetY()) / header.GetScaleY() - header.GetOffsetY());
-                    point.SetZ(mergedHeader.GetOffsetZ() + mergedHeader.GetScaleZ() * (point.GetZ()) / header.GetScaleZ() - header.GetOffsetZ());
+                    point.SetX(point.GetX() - (mergedHeader.GetOffsetX() - header.GetOffsetX()));
+                    point.SetY(point.GetY() - (mergedHeader.GetOffsetY() - header.GetOffsetY()));
+                    point.SetZ(point.GetZ() - (mergedHeader.GetOffsetZ() - header.GetOffsetZ()));
 
                     /*point.SetX(0.5 + (point.GetX() - mergedHeader.GetOffsetX()) / mergedHeader.GetScaleX());
                     point.SetY(0.5 + (point.GetY() - mergedHeader.GetOffsetY()) / mergedHeader.GetScaleY());

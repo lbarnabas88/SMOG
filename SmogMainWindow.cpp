@@ -252,7 +252,10 @@ void SmogMainWindow::on_actionCut_out_Subcloud_triggered()
         // Filter
         CloudStore::getInstance().filterVisibleCloudsTo(ui->Map->getKnifePolygon(),filepath);
         // Load
+        bool tmp = AdaptiveCloudEntry::UseCache;
+        AdaptiveCloudEntry::UseCache = false;
         loadCloudFromFile(filepath);
+        AdaptiveCloudEntry::UseCache = tmp;
     }
 }
 
