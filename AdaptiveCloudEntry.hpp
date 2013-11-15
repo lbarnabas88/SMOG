@@ -28,6 +28,8 @@ public:
     void updateVisualization(pcl::visualization::PCLVisualizer* visualizer, QMapWidget* mapWidget);
     // Size of a segment
     static size_t SegmentSize;
+    // Maximum depth 0 means unlimited
+    static size_t MaxDepth;
     // Thin cloud by level
     static void thinCloudBy(CloudData::Ptr cloudData, float level);
     // Thin cloud to size

@@ -14,6 +14,7 @@
 #include "log.hpp"
 
 size_t AdaptiveCloudEntry::SegmentSize = 100000;
+size_t AdaptiveCloudEntry::MaxDepth = 10;
 
 AdaptiveCloudEntry::AdaptiveCloudEntry() : mNeedToUpdate(false)
 {
@@ -39,6 +40,9 @@ void AdaptiveCloudEntry::visualize(pcl::visualization::PCLVisualizer *visualizer
 
 void AdaptiveCloudEntry::updateVisualization(pcl::visualization::PCLVisualizer *visualizer, QMapWidget* mapWidget)
 {
+    // If not visible, doesn't update
+    if(!isVisible())
+        return;
     // Cameras vector
     std::vector<pcl::visualization::Camera> cameras;
     // Get cameras
@@ -263,7 +267,7 @@ void AdaptiveCloudEntry::build(CloudData::Ptr& cloudData)
     else if(needBuild)
     {
         // Log build new
-        DBOUT("[ACE] Build from scatch.");
+        DBOUT("[ACE-Build] Build from scatch.");
         /// GENERATE NEW SEGMENT BASE
         // Segment path
         mSegmentBase = getName();
@@ -278,16 +282,19 @@ void AdaptiveCloudEntry::build(CloudData::Ptr& cloudData)
         bool needToGoDeeper = true;
 
         // Run while needed
-        for(size_t depth = 0; needToGoDeeper; ++depth)
+        for(size_t depth = 0; needToGoDeeper && (MaxDepth == 0 || depth < MaxDepth); ++depth)
         {
             /// INIT DEPTH
             // Reset need to go deeper
             needToGoDeeper = false;
             // Grid number
             size_t gridN = depth2gridn(depth);
+            // Log
+            DBOUT("[ACE-Build] Start level: " << depth << ", grid number: " << gridN);
 
             /// CREATE SUBCLOUD
             SubCloudLevel& level = addLevel(gridN, bounds);
+            DBOUT("[ACE-Build] Level created");
 
             /// SORT POINTS INTO SUBCLOUDS
             // Divide
@@ -325,6 +332,7 @@ void AdaptiveCloudEntry::build(CloudData::Ptr& cloudData)
                 ++indexOfCurrentSubcloud;
             }
         }
+        DBOUT("[ACE-Build] Divide done.");
         /// CONVERT MAP TO STR
         // Map string
         QString mapStr;
